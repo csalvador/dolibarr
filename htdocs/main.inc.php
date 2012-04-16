@@ -1526,6 +1526,18 @@ function left_menu($menu_array_before, $helppagename='', $moresearchform='', $me
 	        print "<!-- End Bookmarks -->\n";
 	    }
 
+
+		// Link to GPC helpdesk
+		if (empty($conf->global->MAIN_HELP_DISABLESUPPORTLINK))
+		{
+			// Link to help pages
+			print '<div id="blockvmenuhelp" class="blockvmenuhelp">';
+			print '<a class="help" target="_blank" title="Assistance" href="http://assistance.gpcsolutions.fr">';
+			print 'Assistance';
+			print '</a>';
+			print '</div>';
+		}
+
 	    // Link to Dolibarr wiki pages
 	    if ($helppagename && empty($conf->global->MAIN_HELP_DISABLELINK))
 	    {

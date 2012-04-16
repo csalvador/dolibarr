@@ -1583,18 +1583,17 @@ function left_menu($menu_array_before, $helppagename='', $moresearchform='', $me
 	        print "<!-- End Bookmarks -->\n";
 	    }
 
-	    //Dolibarr version
-	    $doliurl='http://www.dolibarr.org';
-	    $appli='Dolibarr';
-	    if (! empty($conf->global->MAIN_APPLICATION_TITLE)) {
-	    	$appli=$conf->global->MAIN_APPLICATION_TITLE; $doliurl='';
-	    }
-	    $appli.=" ".DOL_VERSION;
-	    print '<div id="blockvmenuhelp" class="blockvmenuhelp">';
-	    if ($doliurl) print '<a class="help" target="_blank" href="'.$doliurl.'">';
-	    print $appli;
-	    if ($doliurl) print '</a>';
-	    print '</div>';
+
+		// Link to GPC helpdesk
+		if (empty($conf->global->MAIN_HELP_DISABLESUPPORTLINK))
+		{
+			// Link to help pages
+			print '<div id="blockvmenuhelp" class="blockvmenuhelp">';
+			print '<a class="help" target="_blank" title="Assistance" href="http://assistance.gpcsolutions.fr">';
+			print 'Assistance';
+			print '</a>';
+			print '</div>';
+		}
 
 	    // Link to Dolibarr wiki pages
 	    if ($helppagename && empty($conf->global->MAIN_HELP_DISABLELINK))

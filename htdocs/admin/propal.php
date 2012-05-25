@@ -192,8 +192,42 @@ if ($action == 'setModuleOptions')
 	}
 }
 
+/*if ($action == 'setusecustomercontactasrecipient')
+{
+	dolibarr_set_const($db, "PROPALE_USE_CUSTOMER_CONTACT_AS_RECIPIENT",$_POST["value"],'chaine',0,'',$conf->entity);
+}*/
 
+if ($action == 'set_PROPALE_APPROVAL_COMMENT')
+{
+    $draft = GETPOST('PROPALE_APPROVAL_COMMENT','alpha');
 
+    $res = dolibarr_set_const($db, "PROPALE_APPROVAL_COMMENT",trim($draft),'chaine',0,'',$conf->entity);
+    if (! $res > 0) $error++;
+
+    if (! $error)
+    {
+        $mesg = "<font class=\"ok\">".$langs->trans("SetupSaved")."</font>";
+    }
+    else
+    {
+        $mesg = "<font class=\"error\">".$langs->trans("Error")."</font>";
+    }
+}
+
+if ($action == 'set_PROPALE_APPROVAL')
+{
+    $res = dolibarr_set_const($db, "PROPALE_APPROVAL",$value,'chaine',0,'',$conf->entity);
+    if (! $res > 0) $error++;
+
+    if (! $error)
+    {
+        $mesg = "<font class=\"ok\">".$langs->trans("SetupSaved")."</font>";
+    }
+    else
+    {
+        $mesg = "<font class=\"error\">".$langs->trans("Error")."</font>";
+    }
+}
 
 if ($action == 'set')
 {

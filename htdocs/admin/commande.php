@@ -8,6 +8,7 @@
  * Copyright (C) 2008 	   Raphael Bertrand (Resultic)  <raphael.bertrand@resultic.fr>
  * Copyright (C) 2011-2012 Juanjo Menent			    <jmenent@2byte.es>
  * Copyright (C) 2011-2013 Philippe Grand			    <philippe.grand@atoo-net.com>
+ * Copyright (C) 2012      Raphaël Doursenaud          <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2013 	   Florian Henry			    <florian.henry@open-concept.pro>
  *
  * This program is free software; you can redistribute it and/or modify

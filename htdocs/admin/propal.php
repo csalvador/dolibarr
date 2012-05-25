@@ -620,6 +620,31 @@ print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">'
 print "</td></tr>\n";
 print '</form>';
 
+$var=!$var;
+print "<form method=\"post\" action=\"".$_SERVER["PHP_SELF"]."\">";
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print "<input type=\"hidden\" name=\"action\" value=\"set_PROPALE_APPROVAL\">";
+print "<tr ".$bc[$var].">";
+print '<td>'.$langs->trans("ApprovalOnProposal").'</td>';
+print '<td width="60" align="center">';
+print $form->selectyesno('value',$conf->global->PROPALE_APPROVAL,1);
+print "</td>";
+print '<td align="right"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
+print '</tr>';
+print '</form>';
+
+$var=!$var;
+print "<form method=\"post\" action=\"".$_SERVER["PHP_SELF"]."\">";
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print "<input type=\"hidden\" name=\"action\" value=\"set_PROPALE_APPROVAL_COMMENT\">";
+print '<tr '.$bc[$var].'><td colspan="2">';
+print $langs->trans("ApprovalCommentOnProposal").'<br>';
+print '<input size="50" class="flat" type="text" name="PROPALE_APPROVAL_COMMENT" value="'.$conf->global->PROPALE_APPROVAL_COMMENT.'">';
+print '</td><td align="right">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print "</td></tr>\n";
+print '</form>';
+
 print '</table>';
 
 

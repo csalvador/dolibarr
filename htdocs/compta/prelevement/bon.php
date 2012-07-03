@@ -60,7 +60,9 @@ if ($id > 0 || ! empty($ref))
 
 		$relativepath = 'bon/'.$object->ref;
 
-		print '<a href="'.DOL_URL_ROOT.'/document.php?type=text/plain&amp;modulepart=prelevement&amp;file='.urlencode($relativepath).'">'.$object->ref.'</a>';
+		print '<a';
+        if (!empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) print ' target="blank"';
+        print ' href="'.DOL_URL_ROOT.'/document.php?type=text/plain&amp;modulepart=prelevement&amp;file='.urlencode($relativepath).'">'.$object->ref.'</a>';
 
 		print '</td></tr>';
 		print '</table><br>';

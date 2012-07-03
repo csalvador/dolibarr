@@ -495,7 +495,9 @@ class FormFile
 
 					// Show file name with link to download
 					$out.= '<td class="nowrap">';
-					$out.= '<a data-ajax="false" href="'.DOL_URL_ROOT . '/document.php?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'"';
+					$out.= '<a data-ajax="false"';
+	                if (!empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) $out .= ' target="blank"';
+    	            $out .= ' href="'.DOL_URL_ROOT . '/document.php?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'"';
 					$mime=dol_mimetype($relativepath,'',0);
 					if (preg_match('/text/',$mime)) $out.= ' target="_blank"';
 					$out.= ' target="_blank">';
@@ -590,7 +592,9 @@ class FormFile
     			}
 
     			// Show file name with link to download
-    			$out.= '<a data-ajax="false" href="'.DOL_URL_ROOT . '/document.php?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'"';
+    			$out.= '<a data-ajax="false"';
+                if (!empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) $out .= ' target="blank"';
+                $out.= ' href="'.DOL_URL_ROOT . '/document.php?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'"';
     			$mime=dol_mimetype($relativepath,'',0);
     			if (preg_match('/text/',$mime)) $out.= ' target="_blank"';
     			$out.= '>';
@@ -684,7 +688,9 @@ class FormFile
 					print '<tr '.$bc[$var].'>';
 					print '<td>';
 					//print "XX".$file['name'];	//$file['name'] must be utf8
-					print '<a data-ajax="false" href="'.DOL_URL_ROOT.'/document.php?modulepart='.$modulepart;
+					print '<a data-ajax="false"';
+					if (!empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) print ' target="blank"';
+					print ' href="'.DOL_URL_ROOT.'/document.php?modulepart='.$modulepart;
 					if ($forcedownload) print '&attachment=1';
 					if (! empty($object->entity)) print '&entity='.$object->entity;
 					print '&file='.urlencode($relativepath.$file['name']).'">';
@@ -870,7 +876,9 @@ class FormFile
                 print '</td>';
                 print '<td>';
                 //print "XX".$file['name']; //$file['name'] must be utf8
-                print '<a data-ajax="false" href="'.DOL_URL_ROOT.'/document.php?modulepart='.$modulepart;
+                print '<a data-ajax="false"';
+                if (!empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) print ' target="blank"';
+                print ' href="'.DOL_URL_ROOT.'/document.php?modulepart='.$modulepart;
                 if ($forcedownload) print '&attachment=1';
                 print '&file='.urlencode($relativefile).'">';
                 print img_mime($file['name'],$file['name'].' ('.dol_print_size($file['size'],0,0).')').' ';
@@ -880,7 +888,11 @@ class FormFile
                 print '<td align="right">'.dol_print_size($file['size'],1,1).'</td>';
                 print '<td align="center">'.dol_print_date($file['date'],"dayhour").'</td>';
                 print '<td align="right">';
-                if (! empty($useinecm))  print '<a data-ajax="false" href="'.DOL_URL_ROOT.'/document.php?modulepart='.$modulepart;
+                if (! empty($useinecm)) {
+                    print '<a data-ajax="false"';
+                    if (!empty($conf->global->MAIN_DISABLE_FORCE_SAVEAS)) print ' target="blank"';
+                    print ' href="'.DOL_URL_ROOT.'/document.php?modulepart='.$modulepart;
+                }
                 if ($forcedownload) print '&attachment=1';
                 print '&file='.urlencode($relativefile).'">';
                 print img_view().'</a> &nbsp; ';

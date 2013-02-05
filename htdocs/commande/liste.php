@@ -5,6 +5,7 @@
  * Copyright (C) 2005-2012 Regis Houssin          <regis.houssin@capnetworks.com>
  * Copyright (C) 2012      Juanjo Menent          <jmenent@2byte.es>
  * Copyright (C) 2013      Raphaël Doursenaud     <rdoursenaud@gpcsolutions.fr>
+ * Copyright (C) 2013      Antoine Iauch          <aiauch@gpcsolutions.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +37,19 @@ $langs->load('orders');
 $langs->load('deliveries');
 $langs->load('companies');
 
+$orderyear=GETPOST("orderyear","int");
+$ordermonth=GETPOST("ordermonth","int");
+$deliveryyear=GETPOST("deliveryyear","int");
+$deliverymonth=GETPOST("deliverymonth","int");
+$sref=GETPOST('sref','alpha');
+$sref_client=GETPOST('sref_client','alpha');
+$samount=GETPOST('samount','alpha');
+$samount_ttc=GETPOST('samount_ttc','alpha');
+$snom=GETPOST('snom','alpha');
+$sall=GETPOST('sall');
+$socid=GETPOST('socid','int');
+$search_user=GETPOST('search_user','int');
+$search_sale=GETPOST('search_sale','int');
 // Report period management
 $date_startyear = GETPOST('date_startyear', 'int');
 $date_startmonth = GETPOST('date_startmonth', 'int');
@@ -45,6 +59,30 @@ $date_endyear = GETPOST('date_endyear', 'int');
 $date_endmonth = GETPOST('date_endmonth', 'int');
 $date_endday = GETPOST('date_endday', 'int');
 
+// Security check
+$id = (GETPOST('orderid')?GETPOST('orderid'):GETPOST('id','int'));
+if ($user->societe_id) $socid=$user->societe_id;
+$result = restrictedArea($user, 'commande', $id,'');
+
+$sortfield = GETPOST("sortfield",'alpha');
+$sortorder = GETPOST("sortorder",'alpha');
+$page = GETPOST("page",'int');
+if ($page == -1) { $page = 0; }
+$offset = $conf->liste_limit * $page;
+$pageprev = $page - 1;
+$pagenext = $page + 1;
+if (! $sortfield) $sortfield='c.rowid';
+if (! $sortorder) $sortorder='DESC';
+$limit = $conf->liste_limit;
+
+$viewstatut=GETPOST('viewstatut');
+
+
+/*
+ * Actions
+ */
+
+// Report period management
 if (empty($date_startyear) && empty($date_startmonth) && empty($date_startday)) {
     $date_start = -1; // Empty
 } else {
@@ -77,42 +115,31 @@ if ($date_end < $date_start) {
     $date_end ^= $date_start ^= $date_end ^= $date_start;
 }
 
-$orderyear=GETPOST("orderyear","int");
-$ordermonth=GETPOST("ordermonth","int");
-$deliveryyear=GETPOST("deliveryyear","int");
-$deliverymonth=GETPOST("deliverymonth","int");
-$sref=GETPOST('sref','alpha');
-$sref_client=GETPOST('sref_client','alpha');
-$samount=GETPOST('samount','alpha');
-$samount_ttc=GETPOST('samount_ttc','alpha');
-$snom=GETPOST('snom','alpha');
-$sall=GETPOST('sall');
-$socid=GETPOST('socid','int');
-$search_user=GETPOST('search_user','int');
-$search_sale=GETPOST('search_sale','int');
-
-// Security check
-$id = (GETPOST('orderid')?GETPOST('orderid'):GETPOST('id','int'));
-if ($user->societe_id) $socid=$user->societe_id;
-$result = restrictedArea($user, 'commande', $id,'');
-
-$sortfield = GETPOST("sortfield",'alpha');
-$sortorder = GETPOST("sortorder",'alpha');
-$page = GETPOST("page",'int');
-if ($page == -1) { $page = 0; }
-$offset = $conf->liste_limit * $page;
-$pageprev = $page - 1;
-$pagenext = $page + 1;
-if (! $sortfield) $sortfield='c.rowid';
-if (! $sortorder) $sortorder='DESC';
-$limit = $conf->liste_limit;
-
-$viewstatut=GETPOST('viewstatut');
-
-
-/*
- * Actions
- */
+// Did we make a search ?
+$is_search = false;
+if (
+    ! empty($date_startyear) ||
+    ! empty($date_startmonth) ||
+    ! empty($date_startday) ||
+    ! empty($date_endyear) ||
+    ! empty($date_endmonth) ||
+    ! empty($date_endday) ||
+    ! empty($orderyear) ||
+    ! empty($ordermonth) ||
+    ! empty($deliveryyear) ||
+    ! empty($deliverymonth) ||
+    ! empty($sref) ||
+    ! empty($sref_client) ||
+    ! empty($samount) ||
+    ! empty($samount_ttc) ||
+    ! empty($snom) ||
+    ! empty($sall) ||
+    ! empty($socid) ||
+    ! (empty($search_user) || $search_user == -1) ||
+    ! empty($search_sale)
+) {
+    $is_search = true;
+}
 
 // Do we click on purge search criteria ?
 if (GETPOST("button_removefilter_x"))
@@ -243,11 +270,15 @@ if ($search_user > 0)
 {
     $sql.= " AND ec.fk_c_type_contact = tc.rowid AND tc.element='commande' AND tc.source='internal' AND ec.element_id = c.rowid AND ec.fk_socpeople = ".$search_user;
 }
-if ($date_start && $date_end) {
+if ($date_start !=-1 && $date_end != -1) {
     $sql.= " AND c.date_commande >= '".$db->idate($date_start)."' AND c.date_commande <= '".$db->idate($date_end)."'";
 }
 
 $sql.= ' ORDER BY '.$sortfield.' '.$sortorder;
+
+// We don't want the limit to compute the total
+$sql_total = $sql;
+
 $sql.= $db->plimit($limit + 1,$offset);
 
 //print $sql;
@@ -291,6 +322,12 @@ if ($resql)
 	if ($sref_client)     $param.='&sref_client='.$sref_client;
 	if ($search_user > 0) $param.='&search_user='.$search_user;
 	if ($search_sale > 0) $param.='&search_sale='.$search_sale;
+	if ($date_startyear)  $param.='&date_startyear='.$date_startyear;
+	if ($date_startmonth) $param.='&date_startmonth='.$date_startmonth;
+	if ($date_startday)   $param.='&date_startday='.$date_startday;
+	if ($date_endyear)    $param.='&date_endyear='.$date_endyear;
+	if ($date_endmonth)   $param.='&date_endmonth='.$date_endmonth;
+	if ($date_endday)     $param.='&date_endday='.$date_endday;
 
 	$num = $db->num_rows($resql);
 	print_barre_liste($title, $page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num);
@@ -467,13 +504,31 @@ if ($resql)
 
 		print '</tr>';
 
-		// FIXME: Make total work with multiple pages
-		$total+=$objp->total_ht;
-		$total_ttc+=$objp->total_ttc;
 		$subtotal+=$objp->total_ht;
 		$subtotal_ttc+=$objp->total_ttc;
 		$i++;
 	}
+
+	$db->free($resql);
+	unset($resql);
+
+	// For performance reasons, we only want to compute the total if there is a search
+	if ($is_search) {
+	    // Total computation
+	    $i = 0;
+	    $resql = $db->query($sql_total);
+	    if ($resql) {
+		$num = $db->num_rows($resql);
+		while ($i < $num) {
+		    $objp = $db->fetch_object($resql);
+		    $total+=$objp->total_ht;
+		    $total_ttc+=$objp->total_ttc;
+		    $i++;
+		}
+	    }
+	    $db->free($resql);
+	}
+
 	print '<tr class="liste_total">';
 	print '<td class="liste_total" colspan="5">';
 	print $langs->trans('SubTotal');
@@ -493,7 +548,27 @@ if ($resql)
 	print '</td>';
 	print '</tr>';
 
-	// TODO: Add total
+	if ($is_search) {
+	    print '<tr class="liste_total">';
+	    print '<td class="liste_total" colspan="5">';
+	    print $langs->trans('Total');
+	    print '</td>';
+	    print '<td align="right">';
+	    print price($total);
+	    print '&nbsp;';
+	    print getCurrencySymbol($conf->currency);
+	    print '</td>';
+	    print '<td align="right">';
+	    print price($total_ttc);
+	    print '&nbsp;';
+	    print getCurrencySymbol($conf->currency);
+	    print '</td>';
+	    print '<td>';
+	    print '&nbsp;';
+	    print '</td>';
+	    print '</tr>';
+	}
+
 	if (! empty($conf->global->MAIN_SHOW_TOTAL_FOR_LIMITED_LIST))
 	{
 		$var=!$var;

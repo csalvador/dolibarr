@@ -287,32 +287,16 @@ foreach($headerparams as $key => $value)
      print '<input type="hidden" name="'.$key.'" value="'.$value.'">';
 }
 print "<table class=\"noborder\" width=\"100%\">";
-    // Category filter
-print '<tr class="liste_titre">';
-print '<td>';
-print $langs->trans("Category") . ': ' . $formother->select_categories(2, $selected_cat, 'search_categ', true);
-print ' ';
-print $langs->trans("SubCats") . '? ';
-print '<input type="checkbox" name="subcat" value="yes"';
-if ($subcat) {
-    print ' checked="checked"';
-}
-print'></td>';
-print '<td colspan="4" align="right">';
-print '<input type="image" class="liste_titre" name="button_search" src="'.DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/search.png"  value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
-print '</td>';
-print '</tr>';
-    // Array titles
-print "<tr class='liste_titre'>";
+print "<tr class=\"liste_titre\">";
 print_liste_field_titre(
 	$langs->trans("Company"),
 	$_SERVER["PHP_SELF"],
 	"nom",
 	"",
-	$paramslink,
+	'&amp;year='.($year).'&modecompta='.$modecompta,
 	"",
 	$sortfield,$sortorder
-	);
+    );
 if ($modecompta == 'CREANCES-DETTES') {
     print_liste_field_titre(
            $langs->trans('AmountHT'),
@@ -332,21 +316,21 @@ print_liste_field_titre(
 	$_SERVER["PHP_SELF"],
 	"amount_ttc",
 	"",
-	$paramslink,
+	'&amp;year='.($year).'&modecompta='.$modecompta,
 	'align="right"',
 	$sortfield,
 	$sortorder
-	);
+    );
 print_liste_field_titre(
 	$langs->trans("Percentage"),
 	$_SERVER["PHP_SELF"],
 	"amount_ttc",
 	"",
-	$paramslink,
+	'&amp;year='.($year).'&modecompta='.$modecompta,
 	'align="right"',
 	$sortfield,
 	$sortorder
-	);
+    );
 print_liste_field_titre(
 	$langs->trans("OtherStatistics"),
 	$_SERVER["PHP_SELF"],
@@ -354,7 +338,7 @@ print_liste_field_titre(
 	"",
 	"",
 	'align="center" width="20%"'
-	);
+    );
 print "</tr>\n";
 $var=true;
 

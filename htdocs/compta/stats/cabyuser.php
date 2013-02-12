@@ -253,6 +253,7 @@ if ($modecompta != 'CREANCES-DETTES') {
     }
 }
 
+
 $i = 0;
 print "<table class=\"noborder\" width=\"100%\">";
 print "<tr class=\"liste_titre\">";
@@ -261,44 +262,42 @@ print_liste_field_titre(
 	$_SERVER["PHP_SELF"],
 	"name",
 	"",
-	$paramslink,
+	'&amp;year='.($year).'&modecompta='.$modecompta,
 	"",
 	$sortfield,
 	$sortorder
 	);
 if ($modecompta == 'CREANCES-DETTES') {
     print_liste_field_titre(
-           $langs->trans('AmountHT'),
-           $_SERVER["PHP_SELF"],
-           "amount_ht",
-           "",
-           $paramslink,
-           'align="right"',
-           $sortfield,
-           $sortorder
-	   );
-    } else {
-	print '<td colspan="1"></td>';
+	    $langs->trans('AmountHT'),
+	    $_SERVER["PHP_SELF"],
+	    "amount_ht",
+	    "",
+	    '&amp;year='.($year).'&modecompta='.$modecompta,
+	    'align="right"',
+	    $sortfield,
+	    $sortorder
+	);
 }
 print_liste_field_titre(
 	$langs->trans("AmountTTC"),
 	$_SERVER["PHP_SELF"],
 	"amount_ttc",
 	"",
-	$paramslink,
+	'&amp;year='.($year).'&modecompta='.$modecompta,
 	'align="right"',
 	$sortfield,
 	$sortorder
-	);
+    );
 print_liste_field_titre(
 	$langs->trans("Percentage"),
 	$_SERVER["PHP_SELF"],"amount_ttc",
 	"",
-	$paramslink,
+	'&amp;year='.($year).'&modecompta='.$modecompta,
 	'align="right"',
 	$sortfield,
 	$sortorder
-	);
+    );
 print_liste_field_titre(
 	$langs->trans("OtherStatistics"),
 	$_SERVER["PHP_SELF"],
@@ -306,7 +305,7 @@ print_liste_field_titre(
 	"",
 	"",
 	'align="center" width="20%"'
-	);
+    );
 print "</tr>\n";
 $var=true;
 

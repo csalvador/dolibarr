@@ -155,10 +155,8 @@ if ($modecompta=="CREANCES-DETTES") {
     $builddate=time();
     //$exportlink=$langs->trans("NotYetAvailable");
 }
-$moreparam=array();
-if (! empty($modecompta)) $moreparam['modecompta']=$modecompta;
 
-report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportlink,$moreparam);
+report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportlink,$tableparams);
 
 
 // Show array
@@ -262,7 +260,7 @@ print_liste_field_titre(
 	$_SERVER["PHP_SELF"],
 	"name",
 	"",
-	'&amp;year='.($year).'&modecompta='.$modecompta,
+	$paramslink,
 	"",
 	$sortfield,
 	$sortorder
@@ -273,7 +271,7 @@ if ($modecompta == 'CREANCES-DETTES') {
            $_SERVER["PHP_SELF"],
            "amount_ht",
            "",
-           '&amp;year='.($year).'&modecompta='.$modecompta,
+           $paramslink,
            'align="right"',
            $sortfield,
            $sortorder
@@ -286,7 +284,7 @@ print_liste_field_titre(
 	$_SERVER["PHP_SELF"],
 	"amount_ttc",
 	"",
-	'&amp;year='.($year).'&modecompta='.$modecompta,
+	$paramslink,
 	'align="right"',
 	$sortfield,
 	$sortorder
@@ -295,7 +293,7 @@ print_liste_field_titre(
 	$langs->trans("Percentage"),
 	$_SERVER["PHP_SELF"],"amount_ttc",
 	"",
-	'&amp;year='.($year).'&modecompta='.$modecompta,
+	$paramslink,
 	'align="right"',
 	$sortfield,
 	$sortorder

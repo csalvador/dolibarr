@@ -287,7 +287,23 @@ foreach($headerparams as $key => $value)
      print '<input type="hidden" name="'.$key.'" value="'.$value.'">';
 }
 print "<table class=\"noborder\" width=\"100%\">";
-print "<tr class=\"liste_titre\">";
+    // Category filter
+print '<tr class="liste_titre">';
+print '<td>';
+print $langs->trans("Category") . ': ' . $formother->select_categories(2, $selected_cat, 'search_categ', true);
+print ' ';
+print $langs->trans("SubCats") . '? ';
+print '<input type="checkbox" name="subcat"';
+if ($subcat) {
+    print ' checked="checked" ';
+}
+print'></td>';
+print '<td colspan="4" align="right">';
+print '<input type="image" class="liste_titre" name="button_search" src="'.DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/search.png"  value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
+print '</td>';
+print '</tr>';
+    // Array titles
+print "<tr class='liste_titre'>";
 print_liste_field_titre(
 	$langs->trans("Company"),
 	$_SERVER["PHP_SELF"],

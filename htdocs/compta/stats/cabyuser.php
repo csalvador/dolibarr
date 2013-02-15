@@ -269,15 +269,17 @@ print_liste_field_titre(
 	);
 if ($modecompta == 'CREANCES-DETTES') {
     print_liste_field_titre(
-	    $langs->trans('AmountHT'),
-	    $_SERVER["PHP_SELF"],
-	    "amount_ht",
-	    "",
-	    '&amp;year='.($year).'&modecompta='.$modecompta,
-	    'align="right"',
-	    $sortfield,
-	    $sortorder
-	);
+           $langs->trans('AmountHT'),
+           $_SERVER["PHP_SELF"],
+           "amount_ht",
+           "",
+           '&amp;year='.($year).'&modecompta='.$modecompta,
+           'align="right"',
+           $sortfield,
+           $sortorder
+	   );
+    } else {
+	print '<td colspan="1"></td>';
 }
 print_liste_field_titre(
 	$langs->trans("AmountTTC"),

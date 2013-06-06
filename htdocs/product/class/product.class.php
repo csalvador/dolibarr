@@ -338,19 +338,7 @@ class Product extends CommonObject
 						$result = $this->_log_price($user);
 						if ($result > 0)
 						{
-							if ($this->update($id, $user, true, 'add') > 0)
-							{
-								// FIXME: not use here
-								/*
-								if ($this->catid > 0)
-								{
-									require_once DOL_DOCUMENT_ROOT .'/categories/class/categorie.class.php';
-									$cat = new Categorie($this->db, $this->catid);
-									$cat->add_type($this,"product");
-								}
-								*/
-							}
-							else
+							if ($this->update($id, $user, true, 'add') <= 0)
 							{
 							    $error++;
 					            $this->error='ErrorFailedToUpdateRecord';
@@ -676,7 +664,7 @@ class Product extends CommonObject
                 		}
                 	}
                 }
-                
+
                 // Remove extrafields
                 if ((! $error) && (empty($conf->global->MAIN_EXTRAFIELDS_DISABLED))) // For avoid conflicts if trigger used
                 {
@@ -2174,13 +2162,13 @@ class Product extends CommonObject
 					'type'=>$type,				// Nb of units that compose parent product
 					'desiredstock' => $this->desiredstock
 				);
-			}
 
-			// Recursive call if child is an array
-			if (is_array($desc_pere['childs']))
-			{
-				//print 'YYY We go down for '.$desc_pere[3]." -> \n";
-				$this ->fetch_prod_arbo($desc_pere['childs'], $compl_path.$desc_pere[3]." -> ", $desc_pere[1]*$multiply, $level+1);
+				// Recursive call if child is an array
+				if (is_array($desc_pere['childs']))
+				{
+					//print 'YYY We go down for '.$desc_pere[3]." -> \n";
+					$this ->fetch_prod_arbo($desc_pere['childs'], $compl_path.$desc_pere[3]." -> ", $desc_pere[1]*$multiply, $level+1);
+				}
 			}
 		}
 	}

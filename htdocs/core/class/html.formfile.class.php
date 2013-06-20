@@ -494,6 +494,7 @@ class FormFile
 						//$out.= '&urlsource='.urlencode($urlsource); // TODO obsolete ?
 						$out.= '">'.img_delete().'</a></td>';
 					}
+                    if (is_object($hookmanager)) $out.= $hookmanager->executeHooks('formBuilddocLineOptions',$parameters,$file);
 				}
 
                 $out.= '</tr>';

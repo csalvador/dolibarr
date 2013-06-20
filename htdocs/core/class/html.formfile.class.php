@@ -205,7 +205,7 @@ class FormFile
         if (! empty($iconPDF)) {
         	return $this->getDocumentsLink($modulepart, $filename, $filedir);
         }
-
+        $hookmanager->initHooks(array('formfile'));
         $forname='builddoc';
         $out='';
         $var=true;

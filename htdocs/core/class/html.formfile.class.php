@@ -431,6 +431,14 @@ class FormFile
             }
             $out.= '</th>';
 
+            if ($printer) $out.= '<th></th>';
+            if($hookmanager->hooks['formfile'])
+            {
+                foreach($hookmanager->hooks['formfile'] as $module)
+                {
+                    if(method_exists($module, 'formBuilddocLineOptions')) $out .= '<th></th>';
+                }
+            }
             $out.= '</tr>';
 
             // Execute hooks

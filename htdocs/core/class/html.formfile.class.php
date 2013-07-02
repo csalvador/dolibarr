@@ -205,7 +205,7 @@ class FormFile
         if (! empty($iconPDF)) {
         	return $this->getDocumentsLink($modulepart, $filename, $filedir);
         }
-
+        $hookmanager->initHooks(array('formfile'));
         $forname='builddoc';
         $out='';
         $var=true;
@@ -431,6 +431,14 @@ class FormFile
             }
             $out.= '</th>';
 
+            if ($printer) $out.= '<th></th>';
+            if($hookmanager->hooks['formfile'])
+            {
+                foreach($hookmanager->hooks['formfile'] as $module)
+                {
+                    if(method_exists($module, 'formBuilddocLineOptions')) $out .= '<th></th>';
+                }
+            }
             $out.= '</tr>';
 
             // Execute hooks
@@ -496,6 +504,7 @@ class FormFile
 						//$out.= '&urlsource='.urlencode($urlsource); // TODO obsolete ?
 						$out.= '">'.img_delete().'</a></td>';
 					}
+                    if (is_object($hookmanager)) $out.= $hookmanager->executeHooks('formBuilddocLineOptions',$parameters,$file);
 				}
 
                 $out.= '</tr>';

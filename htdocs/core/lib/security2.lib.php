@@ -230,13 +230,13 @@ function dol_loginfunction($langs,$conf,$mysoc)
 		$urllogo=DOL_URL_ROOT.'/viewimage.php?cache=1&amp;modulepart=companylogo&amp;file='.urlencode($mysoc->logo);
 		$width=128;
 	}
-	elseif (is_readable(DOL_DOCUMENT_ROOT.'/theme/'.$conf->theme.'/img/dolibarr_logo.png'))
+	elseif (is_readable(DOL_DOCUMENT_ROOT.'/theme/'.$conf->theme.'/img/zenfusion_logo.png'))
 	{
-		$urllogo=DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/dolibarr_logo.png';
+		$urllogo=DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/zenfusion_logo.png';
 	}
-	elseif (is_readable(DOL_DOCUMENT_ROOT.'/theme/dolibarr_logo.png'))
+	elseif (is_readable(DOL_DOCUMENT_ROOT.'/theme/zenfusion_logo.png'))
 	{
-		$urllogo=DOL_URL_ROOT.'/theme/dolibarr_logo.png';
+		$urllogo=DOL_URL_ROOT.'/theme/zenfusion_logo.png';
 
 	}
 

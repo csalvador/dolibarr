@@ -2201,7 +2201,7 @@ if ($action == 'create')
 
 	// Date invoice
 	print '<tr><td class="fieldrequired">'.$langs->trans('Date').'</td><td colspan="2">';
-	$form->select_date($dateinvoice,'','','','',"add",1,1);
+	$form->select_date($now,'','','','',"add",1,1);
 	print '</td></tr>';
 
 	// Payment term

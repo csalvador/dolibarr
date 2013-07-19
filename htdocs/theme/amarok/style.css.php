@@ -250,7 +250,8 @@ input.flat {
 input:disabled {background:#b6b6b6;}
 
 input[type=checkbox] { background-color: transparent; border: none; box-shadow: none; }
-input[type=image] { background-color: transparent; border: none; box-shadow: none; }
+input[type=radio]    { background-color: transparent; border: none; box-shadow: none; }
+input[type=image]    { background-color: transparent; border: none; box-shadow: none; }
 input:-webkit-autofill {
 	background-color: <?php echo empty($dol_use_jmobile)?'#FBFFEA':'#FFFFFF' ?> !important;
 	background-image:none !important;
@@ -956,7 +957,7 @@ a.tabTitle img {
 }
 
 a.tab {
-	padding: 5px 12px 5px;
+	padding: 5px 12px 2px;
 	margin: 0em 0.2em;
 	background-color:rgba(0,0,0,.2);
 	color:#666666;

@@ -2211,6 +2211,8 @@ if ($action == 'create')
 
 	// Payment mode
 	print '<tr><td>'.$langs->trans('PaymentMode').'</td><td colspan="2">';
+    // Set default payment mode
+    $mode_reglement_id = 4; // Cash
 	$form->select_types_paiements(isset($_POST['mode_reglement_id'])?$_POST['mode_reglement_id']:$mode_reglement_id,'mode_reglement_id');
 	print '</td></tr>';
 

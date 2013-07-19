@@ -407,6 +407,8 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
             if ($facture->type != 2) print '<td><span class="fieldrequired">'.$langs->trans('AccountToCredit').'</span></td>';
             if ($facture->type == 2) print '<td><span class="fieldrequired">'.$langs->trans('AccountToDebit').'</span></td>';
             print '<td>';
+            // Set cash account per default
+            $accountid = 1;
             $form->select_comptes($accountid,'accountid',0,'',2);
             print '</td>';
         }

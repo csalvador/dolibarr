@@ -677,49 +677,52 @@ class ExtraFields
 		}
 		elseif ($type == 'sellist')
 		{
+
 			$out='<select class="flat" name="options_'.$key.'">';
-			$param_list=array_keys($param['options']);
-			$InfoFieldList = explode(":", $param_list[0]);
+			if (is_array($param['options'])) {
+				$param_list=array_keys($param['options']);
+				$InfoFieldList = explode(":", $param_list[0]);
 
-			// 0 1 : tableName
-			// 1 2 : label field name Nom du champ contenant le libelle
-			// 2 3 : key fields name (if differ of rowid)
+				// 0 1 : tableName
+				// 1 2 : label field name Nom du champ contenant le libelle
+				// 2 3 : key fields name (if differ of rowid)
 
-			$keyList='rowid';
+				$keyList='rowid';
 
-			if (count($InfoFieldList)==3)
-				$keyList=$InfoFieldList[2].' as rowid';
+				if (count($InfoFieldList)==3)
+					$keyList=$InfoFieldList[2].' as rowid';
 
-			$sql = 'SELECT '.$keyList.', '.$InfoFieldList[1];
-			$sql.= ' FROM '.MAIN_DB_PREFIX .$InfoFieldList[0];
-			//$sql.= ' WHERE entity = '.$conf->entity;
+				$sql = 'SELECT '.$keyList.', '.$InfoFieldList[1];
+				$sql.= ' FROM '.MAIN_DB_PREFIX .$InfoFieldList[0];
+				//$sql.= ' WHERE entity = '.$conf->entity;
 
-			dol_syslog(get_class($this).'::showInputField type=sellist sql='.$sql);
-			$resql = $this->db->query($sql);
+				dol_syslog(get_class($this).'::showInputField type=sellist sql='.$sql);
+				$resql = $this->db->query($sql);
 
-			if ($resql)
-			{
-				$out.='<option value="0">&nbsp;</option>';
-				$num = $this->db->num_rows($resql);
-				$i = 0;
-				if ($num)
+				if ($resql)
 				{
-					while ($i < $num)
+					$out.='<option value="0">&nbsp;</option>';
+					$num = $this->db->num_rows($resql);
+					$i = 0;
+					if ($num)
 					{
-						$obj = $this->db->fetch_object($resql);
-						$labeltoshow=dol_trunc($obj->$InfoFieldList[1],18);
-						if ($value==$obj->rowid)
+						while ($i < $num)
 						{
-							$out.='<option value="'.$obj->rowid.'" selected="selected">'.$labeltoshow.'</option>';
+							$obj = $this->db->fetch_object($resql);
+							$labeltoshow=dol_trunc($obj->$InfoFieldList[1],18);
+							if ($value==$obj->rowid)
+							{
+								$out.='<option value="'.$obj->rowid.'" selected="selected">'.$labeltoshow.'</option>';
+							}
+							else
+							{
+								$out.='<option value="'.$obj->rowid.'" >'.$labeltoshow.'</option>';
+							}
+							$i++;
 						}
-						else
-						{
-							$out.='<option value="'.$obj->rowid.'" >'.$labeltoshow.'</option>';
-						}
-						$i++;
 					}
+					$this->db->free();
 				}
-				$this->db->free();
 			}
 			$out.='</select>';
 		}
@@ -824,23 +827,25 @@ class ExtraFields
 		}
 		elseif ($type == 'sellist')
 		{
-			$param_list=array_keys($params['options']);
-			$InfoFieldList = explode(":", $param_list[0]);
-			$keyList='rowid';
-			if (count($InfoFieldList)==3)
-				$keyList=$InfoFieldList[2];
+			if (is_array($params['options'])) {
+				$param_list=array_keys($params['options']);
+				$InfoFieldList = explode(":", $param_list[0]);
+				$keyList='rowid';
+				if (count($InfoFieldList)==3)
+					$keyList=$InfoFieldList[2];
 
 
-			$sql = 'SELECT '.$InfoFieldList[1];
-			$sql.= ' FROM '.MAIN_DB_PREFIX .$InfoFieldList[0];
-			$sql.= ' WHERE '.$keyList.'=\''.$this->db->escape($value).'\'';
-			//$sql.= ' AND entity = '.$conf->entity;
-			dol_syslog(get_class($this).':showOutputField:$type=sellist sql='.$sql);
-			$resql = $this->db->query($sql);
-			if ($resql)
-			{
-				$obj = $this->db->fetch_object($resql);
-				$value=$obj->$InfoFieldList[1];
+				$sql = 'SELECT '.$InfoFieldList[1];
+				$sql.= ' FROM '.MAIN_DB_PREFIX .$InfoFieldList[0];
+				$sql.= ' WHERE '.$keyList.'=\''.$this->db->escape($value).'\'';
+				//$sql.= ' AND entity = '.$conf->entity;
+				dol_syslog(get_class($this).':showOutputField:$type=sellist sql='.$sql);
+				$resql = $this->db->query($sql);
+				if ($resql)
+				{
+					$obj = $this->db->fetch_object($resql);
+					$value=$obj->$InfoFieldList[1];
+				}
 			}
 		}
 		elseif ($type == 'radio')
@@ -889,7 +894,9 @@ class ExtraFields
 	 */
 	function setOptionalsFromPost($extralabels,&$object)
 	{
-		global $_POST;
+		global $_POST, $langs;
+		$nofillrequired='';// For error when required field left blank
+		$error_field_required = array();
 
 		if (is_array($extralabels))
 		{
@@ -897,6 +904,11 @@ class ExtraFields
 			foreach ($extralabels as $key => $value)
 			{
 				$key_type = $this->attribute_type[$key];
+				if($this->attribute_required[$key] && !GETPOST("options_$key",2))
+				{
+					$nofillrequired++;
+					$error_field_required[] = $value;
+				}
 
 				if (in_array($key_type,array('date','datetime')))
 				{
@@ -906,7 +918,11 @@ class ExtraFields
 				else if (in_array($key_type,array('checkbox')))
 				{
 					$value_arr=GETPOST("options_".$key);
-					$value_key=implode($value_arr,',');
+					if (!empty($value_arr)) {
+						$value_key=implode($value_arr,',');
+					}else {
+						$value_key='';
+					}
 				}
 				else if (in_array($key_type,array('price','double')))
 				{
@@ -920,7 +936,14 @@ class ExtraFields
 				$object->array_options["options_".$key]=$value_key;
 			}
 
-			return 1;
+			if($nofillrequired) {
+				$langs->load('errors');
+				setEventMessage($langs->trans('ErrorFieldsRequired').' : '.implode(', ',$error_field_required),'errors');
+				return -1;
+			}
+			else {
+				return 1;
+			}
 		}
 		else {
 			return 0;

@@ -35,6 +35,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 if (! empty($conf->categorie->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 
 $langs->load("products");
 $langs->load("stocks");
@@ -315,6 +316,10 @@ else
     		    print '</td></tr>';
     		}
 
+            //get all warehouses
+            $warehouse = new Entrepot($db);
+            $warehouse_array = $warehouse->list_array();
+
     		// Lignes des titres
     		print "<tr class=\"liste_titre\">";
     		print_liste_field_titre($langs->trans("Ref"), $_SERVER["PHP_SELF"], "p.ref",$param,"","",$sortfield,$sortorder);
@@ -334,6 +339,12 @@ else
             }
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) print '<td class="liste_titre" align="right">'.$langs->trans("DesiredStock").'</td>';
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) print '<td class="liste_titre" align="right">'.$langs->trans("PhysicalStock").'</td>';
+    		//stock for each warehouse
+    		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) {
+    			foreach ($warehouse_array as $warehouse) {
+    				print '<td class="liste_titre" align="right">Stock ' . $warehouse . '</td>';
+    			}
+    		}
     		print_liste_field_titre($langs->trans("Sell"), $_SERVER["PHP_SELF"], "p.tosell",$param,"",'align="right"',$sortfield,$sortorder);
             print_liste_field_titre($langs->trans("Buy"), $_SERVER["PHP_SELF"], "p.tobuy",$param,"",'align="right"',$sortfield,$sortorder);
     		print "</tr>\n";
@@ -395,6 +406,10 @@ else
     			print '<td class="liste_titre">';
     			print '&nbsp;';
     			print '</td>';
+    			//stock for each warehouse
+    			foreach ($warehouse_array as $warehouse) {
+    				print '<td class="liste_titre">&nbsp;</td>';
+    			}
     		}
 
     		print '<td class="liste_titre">';
@@ -510,6 +525,7 @@ else
     			{
     				if ($objp->fk_product_type != 1)
     				{
+                        $product_static = new Product($db);
     					$product_static->id = $objp->rowid;
     					$product_static->load_stock();
                         print '<td align="right">';
@@ -519,6 +535,11 @@ else
                         if ($product_static->stock_reel < $objp->seuil_stock_alerte) print img_warning($langs->trans("StockTooLow")).' ';
         				print $product_static->stock_reel;
     					print '</td>';
+                        //stock for each warehouse
+                        foreach ($warehouse_array as $id => $label) {
+                            $warehouse_stock = max(0, $product_static->stock_warehouse[$id]->real);
+                            print '<td align="right">' . $warehouse_stock . '</td>';
+                        }
     				}
     				else
     				{

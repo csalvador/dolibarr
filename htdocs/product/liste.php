@@ -189,15 +189,23 @@ else
 
     }
     if ($sbarcode) $sql.= " AND p.barcode LIKE '%".$sbarcode."%'";
-    if ($snom)
-	{
+    if ($snom) {
+        // For natural search
+        $scrit = explode(' ', $snom);
 		// multilang
 		if ($conf->global->MAIN_MULTILANGS) // si l'option est active
 	    {
-			$sql.= " AND (p.label LIKE '%".$db->escape($snom)."%' OR (pl.label IS NOT null AND pl.label LIKE '%".$db->escape($snom)."%'))";
+			foreach ($scrit as $crit) {
+		        $sql.= " AND (p.label LIKE '%".$db->escape($crit)."%' OR (pl.label IS NOT null AND pl.label LIKE '%".$db->escape($crit)."%'))";
+		    }
 		}
-		else $sql.= " AND p.label LIKE '%".$db->escape($snom)."%'";
-}
+		else
+		{
+		    foreach ($scrit as $crit) {
+		        $sql.= " AND (p.label LIKE '%".$db->escape($crit)."%')";
+		    }
+		}
+    }
     if (isset($tosell) && dol_strlen($tosell) > 0) $sql.= " AND p.tosell = ".$db->escape($tosell);
     if (isset($tobuy) && dol_strlen($tobuy) > 0)   $sql.= " AND p.tobuy = ".$db->escape($tobuy);
     if (dol_strlen($canvas) > 0)                    $sql.= " AND p.canvas = '".$db->escape($canvas)."'";

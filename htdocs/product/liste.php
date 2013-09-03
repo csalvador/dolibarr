@@ -34,6 +34,8 @@ require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 if (! empty($conf->categorie->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 
 $langs->load("products");
 $langs->load("stocks");
@@ -81,6 +83,9 @@ if ($type=='0') $result=restrictedArea($user,'produit','','','','','',$objcanvas
 else if ($type=='1') $result=restrictedArea($user,'service','','','','','',$objcanvas);
 else $result=restrictedArea($user,'produit|service','','','','','',$objcanvas);
 
+$extrafields = new ExtraFields($db);
+// fetch optionals attributes and labels
+$extralabels=$extrafields->fetch_name_optionals_label('product');
 
 /*
  * Actions
@@ -175,17 +180,33 @@ else
     	if ($type == 1) $sql.= " AND p.fk_product_type = '1'";
     	else $sql.= " AND p.fk_product_type <> '1'";
     }
-    if ($sref)     $sql.= " AND p.ref LIKE '%".$sref."%'";
+    if ($sref) {
+        //Natural search
+        $scrit = explode(' ', $sref);
+
+        foreach ($scrit as $crit) {
+            $sql.= " AND (p.ref LIKE '%".$db->escape($crit)."%')";
+        }
+
+    }
     if ($sbarcode) $sql.= " AND p.barcode LIKE '%".$sbarcode."%'";
-    if ($snom)
-	{
+    if ($snom) {
+        // For natural search
+        $scrit = explode(' ', $snom);
 		// multilang
 		if ($conf->global->MAIN_MULTILANGS) // si l'option est active
 	    {
-			$sql.= " AND (p.label LIKE '%".$db->escape($snom)."%' OR (pl.label IS NOT null AND pl.label LIKE '%".$db->escape($snom)."%'))";
+			foreach ($scrit as $crit) {
+		        $sql.= " AND (p.label LIKE '%".$db->escape($crit)."%' OR (pl.label IS NOT null AND pl.label LIKE '%".$db->escape($crit)."%'))";
+		    }
 		}
-		else $sql.= " AND p.label LIKE '%".$db->escape($snom)."%'";
-}
+		else
+		{
+		    foreach ($scrit as $crit) {
+		        $sql.= " AND (p.label LIKE '%".$db->escape($crit)."%')";
+		    }
+		}
+    }
     if (isset($tosell) && dol_strlen($tosell) > 0) $sql.= " AND p.tosell = ".$db->escape($tosell);
     if (isset($tobuy) && dol_strlen($tobuy) > 0)   $sql.= " AND p.tobuy = ".$db->escape($tobuy);
     if (dol_strlen($canvas) > 0)                    $sql.= " AND p.canvas = '".$db->escape($canvas)."'";
@@ -295,6 +316,10 @@ else
     		    print '</td></tr>';
     		}
 
+            //get all warehouses
+            $warehouse = new Entrepot($db);
+            $warehouse_array = $warehouse->list_array();
+
     		// Lignes des titres
     		print "<tr class=\"liste_titre\">";
     		print_liste_field_titre($langs->trans("Ref"), $_SERVER["PHP_SELF"], "p.ref",$param,"","",$sortfield,$sortorder);
@@ -303,9 +328,23 @@ else
     		print_liste_field_titre($langs->trans("DateModification"), $_SERVER["PHP_SELF"], "p.tms",$param,"",'align="center"',$sortfield,$sortorder);
     		if (! empty($conf->service->enabled) && $type != 0) print_liste_field_titre($langs->trans("Duration"), $_SERVER["PHP_SELF"], "p.duration",$param,"",'align="center"',$sortfield,$sortorder);
     		if (empty($conf->global->PRODUIT_MULTIPRICES)) print_liste_field_titre($langs->trans("SellingPrice"), $_SERVER["PHP_SELF"], "p.price",$param,"",'align="right"',$sortfield,$sortorder);
-    		print '<td class="liste_titre" align="right">'.$langs->trans("BuyingPriceMinShort").'</td>';
+    		if ($user->rights->produit->creer) {
+                print '<td class="liste_titre" align="right">'.$langs->trans("BuyingPriceMinShort").'</td>';
+            }
+			foreach ($extralabels as $key => $label) {
+                //only display price type extrafields
+                if ($extrafields->attribute_type[$key] == 'price') {
+                    print '<td class="liste_titre" align="right">' . $label . '</td>';
+                }
+            }
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) print '<td class="liste_titre" align="right">'.$langs->trans("DesiredStock").'</td>';
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) print '<td class="liste_titre" align="right">'.$langs->trans("PhysicalStock").'</td>';
+    		//stock for each warehouse
+    		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) {
+    			foreach ($warehouse_array as $warehouse) {
+    				print '<td class="liste_titre" align="right">Stock ' . $warehouse . '</td>';
+    			}
+    		}
     		print_liste_field_titre($langs->trans("Sell"), $_SERVER["PHP_SELF"], "p.tosell",$param,"",'align="right"',$sortfield,$sortorder);
             print_liste_field_titre($langs->trans("Buy"), $_SERVER["PHP_SELF"], "p.tobuy",$param,"",'align="right"',$sortfield,$sortorder);
     		print "</tr>\n";
@@ -345,9 +384,17 @@ else
             }
 
     		// Minimum buying Price
-    		print '<td class="liste_titre">';
-    		print '&nbsp;';
-    		print '</td>';
+            if ($user->rights->produit->creer) {
+                print '<td class="liste_titre">';
+                print '&nbsp;';
+                print '</td>';
+            }
+			foreach ($extralabels as $key => $label) {
+                //only display price type extrafields
+                if ($extrafields->attribute_type[$key] == 'price') {
+                    print '<td class="liste_titre">&nbsp;</td>';
+                }
+            }
 
     		// Stock
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1)
@@ -359,6 +406,10 @@ else
     			print '<td class="liste_titre">';
     			print '&nbsp;';
     			print '</td>';
+    			//stock for each warehouse
+    			foreach ($warehouse_array as $warehouse) {
+    				print '<td class="liste_titre">&nbsp;</td>';
+    			}
     		}
 
     		print '<td class="liste_titre">';
@@ -442,27 +493,39 @@ else
     			}
 
     			// Better buy price
-                print  '<td align="right">';
-                if ($objp->minsellprice != '')
-                {
-                    //print price($objp->minsellprice).' '.$langs->trans("HT");
-        			if ($product_fourn->find_min_price_product_fournisseur($objp->rowid) > 0)
-        			{
-        			    if ($product_fourn->product_fourn_price_id > 0)
-        			    {
-        			        $htmltext=$product_fourn->display_price_product_fournisseur();
-                            if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->lire) print $form->textwithpicto(price($product_fourn->fourn_unitprice).' '.$langs->trans("HT"),$htmltext);
-                            else print price($product_fourn->fourn_unitprice).' '.$langs->trans("HT");
-        			    }
-        			}
+                if ($user->rights->produit->creer) {
+                    print  '<td align="right">';
+                    if ($objp->minsellprice != '')
+                    {
+                        //print price($objp->minsellprice).' '.$langs->trans("HT");
+                        if ($product_fourn->find_min_price_product_fournisseur($objp->rowid) > 0)
+                        {
+                            if ($product_fourn->product_fourn_price_id > 0)
+                            {
+                                $htmltext=$product_fourn->display_price_product_fournisseur();
+                                if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->lire) print $form->textwithpicto(price($product_fourn->fourn_unitprice).' '.$langs->trans("HT"),$htmltext);
+                                else print price($product_fourn->fourn_unitprice).' '.$langs->trans("HT");
+                            }
+                        }
+                    }
+                    print '</td>';
                 }
-                print '</td>';
+
+				//fetch extrafields
+                $res = $product_static->fetch_optionals($objp->rowid,$extralabels);
+                foreach ($product_static->array_options as $key => $value) {
+                    //only display price type extrafields
+                    if ($extrafields->attribute_type[str_replace('options_', '', $key)] == 'price') {
+                        print '<td align="right">' . price($value) . '</td>';
+                    }
+                }
 
     			// Show stock
     			if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1)
     			{
     				if ($objp->fk_product_type != 1)
     				{
+                        $product_static = new Product($db);
     					$product_static->id = $objp->rowid;
     					$product_static->load_stock();
                         print '<td align="right">';
@@ -472,6 +535,11 @@ else
                         if ($product_static->stock_reel < $objp->seuil_stock_alerte) print img_warning($langs->trans("StockTooLow")).' ';
         				print $product_static->stock_reel;
     					print '</td>';
+                        //stock for each warehouse
+                        foreach ($warehouse_array as $id => $label) {
+                            $warehouse_stock = max(0, $product_static->stock_warehouse[$id]->real);
+                            print '<td align="right">' . $warehouse_stock . '</td>';
+                        }
     				}
     				else
     				{

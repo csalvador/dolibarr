@@ -34,6 +34,7 @@ require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 if (! empty($conf->categorie->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 
 $langs->load("products");
 $langs->load("stocks");
@@ -81,6 +82,9 @@ if ($type=='0') $result=restrictedArea($user,'produit','','','','','',$objcanvas
 else if ($type=='1') $result=restrictedArea($user,'service','','','','','',$objcanvas);
 else $result=restrictedArea($user,'produit|service','','','','','',$objcanvas);
 
+$extrafields = new ExtraFields($db);
+// fetch optionals attributes and labels
+$extralabels=$extrafields->fetch_name_optionals_label('product');
 
 /*
  * Actions
@@ -295,6 +299,7 @@ else
     		    print '</td></tr>';
     		}
 
+
     		// Lignes des titres
     		print "<tr class=\"liste_titre\">";
     		print_liste_field_titre($langs->trans("Ref"), $_SERVER["PHP_SELF"], "p.ref",$param,"","",$sortfield,$sortorder);
@@ -304,6 +309,12 @@ else
     		if (! empty($conf->service->enabled) && $type != 0) print_liste_field_titre($langs->trans("Duration"), $_SERVER["PHP_SELF"], "p.duration",$param,"",'align="center"',$sortfield,$sortorder);
     		if (empty($conf->global->PRODUIT_MULTIPRICES)) print_liste_field_titre($langs->trans("SellingPrice"), $_SERVER["PHP_SELF"], "p.price",$param,"",'align="right"',$sortfield,$sortorder);
     		print '<td class="liste_titre" align="right">'.$langs->trans("BuyingPriceMinShort").'</td>';
+            foreach ($extralabels as $key => $label) {
+                //only display price type extrafields
+                if ($extrafields->attribute_type[$key] == 'price') {
+                    print '<td class="liste_titre" align="right">' . $label . '</td>';
+                }
+            }
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) print '<td class="liste_titre" align="right">'.$langs->trans("DesiredStock").'</td>';
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) print '<td class="liste_titre" align="right">'.$langs->trans("PhysicalStock").'</td>';
     		print_liste_field_titre($langs->trans("Sell"), $_SERVER["PHP_SELF"], "p.tosell",$param,"",'align="right"',$sortfield,$sortorder);
@@ -348,6 +359,13 @@ else
     		print '<td class="liste_titre">';
     		print '&nbsp;';
     		print '</td>';
+            
+            foreach ($extralabels as $key => $label) {
+                //only display price type extrafields
+                if ($extrafields->attribute_type[$key] == 'price') {
+                    print '<td class="liste_titre">&nbsp;</td>';
+                }
+            }
 
     		// Stock
     		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1)
@@ -457,6 +475,15 @@ else
         			}
                 }
                 print '</td>';
+
+                //fetch extrafields
+                $res = $product_static->fetch_optionals($objp->rowid,$extralabels);
+                foreach ($product_static->array_options as $key => $value) {
+                    //only display price type extrafields
+                    if ($extrafields->attribute_type[str_replace('options_', '', $key)] == 'price') {
+                        print '<td align="right">' . price($value) . '</td>';
+                    }
+                }
 
     			// Show stock
     			if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1)

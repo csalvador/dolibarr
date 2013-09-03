@@ -179,7 +179,15 @@ else
     	if ($type == 1) $sql.= " AND p.fk_product_type = '1'";
     	else $sql.= " AND p.fk_product_type <> '1'";
     }
-    if ($sref)     $sql.= " AND p.ref LIKE '%".$sref."%'";
+    if ($sref) {
+        //Natural search
+        $scrit = explode(' ', $sref);
+
+        foreach ($scrit as $crit) {
+            $sql.= " AND (p.ref LIKE '%".$db->escape($crit)."%')";
+        }
+
+    }
     if ($sbarcode) $sql.= " AND p.barcode LIKE '%".$sbarcode."%'";
     if ($snom)
 	{

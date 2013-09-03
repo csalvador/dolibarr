@@ -2591,16 +2591,16 @@ else if ($id > 0 || ! empty($ref))
 			{
 				$langs->load("stocks");
 				require_once DOL_DOCUMENT_ROOT.'/product/class/html.formproduct.class.php';
-                require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
+				require_once DOL_DOCUMENT_ROOT.'/product/stock/class/entrepot.class.php';
 				$formproduct=new FormProduct($db);
-                $warehouse = new Entrepot($db);
-                $warehouse_array = $warehouse->list_array();
-                if (count($warehouse_array) == 1) {
-                    $label = $object->type==2?$langs->trans("WarehouseForStockDecrease", current($warehouse_array)):$langs->trans("WarehouseForStockIncrease", current($warehouse_array));
-                    $value = '<input type="hidden" id="idwarehouse" name="idwarehouse" value="' . key($warehouse_array) . '">';
-                } else {
-                    $label=$object->type==2?$langs->trans("SelectWarehouseForStockDecrease"):$langs->trans("SelectWarehouseForStockIncrease");
-                    $value = $formproduct->selectWarehouses(GETPOST('idwarehouse'),'idwarehouse','',0);
+				$warehouse = new Entrepot($db);
+				$warehouse_array = $warehouse->list_array();
+				if (count($warehouse_array) == 1) {
+					$label = $object->type==2?$langs->trans("WarehouseForStockDecrease", current($warehouse_array)):$langs->trans("WarehouseForStockIncrease", current($warehouse_array));
+					$value = '<input type="hidden" id="idwarehouse" name="idwarehouse" value="' . key($warehouse_array) . '">';
+				} else {
+					$label=$object->type==2?$langs->trans("SelectWarehouseForStockDecrease"):$langs->trans("SelectWarehouseForStockIncrease");
+					$value = $formproduct->selectWarehouses(GETPOST('idwarehouse'),'idwarehouse','',0);
 				}
                 $formquestion=array(
 				//'text' => $langs->trans("ConfirmClone"),

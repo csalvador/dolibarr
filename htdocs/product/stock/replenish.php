@@ -66,9 +66,15 @@ $offset = $limit * $page ;
  * Actions
  */
 
+if (isset($_POST['button_removefilter'])) {
+    $sref = '';
+    $snom = '';
+    $sal = '';
+}
+
 //orders creation
 //FIXME: could go in the lib
-if ($action == 'order') {
+if ($action == 'order' && isset($_POST['valid'])) {
     $linecount = GETPOST('linecount', 'int');
     $box = 0;
     unset($_POST['linecount']);
@@ -356,6 +362,8 @@ if ($resql) {
          '<td class="liste_titre" align="right">',
          '<input type="image" class="liste_titre" name="button_search"',
          'src="' . DOL_URL_ROOT . '/theme/' . $conf->theme . '/img/search.png" alt="' . $langs->trans("Search") . '">',
+         '<input type="image" class="liste_titre" name="button_removefilter"
+          src="'.DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/searchclear.png" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">',
          '</td>',
          '</tr>';
 
@@ -480,7 +488,7 @@ if ($resql) {
          '</div>',
          '<table width="100%">',
          '<tr><td align="right">',
-         '<input class="butAction" type="submit" value="' . $value . '">',
+         '<input class="butAction" type="submit" name="valid" value="' . $value . '">',
          '</td></tr></table>',
          '</form>';
 

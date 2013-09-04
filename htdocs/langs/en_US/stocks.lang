@@ -1,4 +1,4 @@
-# Dolibarr language file - en_US - stocks
+# Dolibarr language file - Source file is en_US - stocks
 CHARSET=UTF-8
 WarehouseCard=Warehouse card
 Warehouse=Warehouse
@@ -95,5 +95,6 @@ ReplenishmentOrders=Replenishment orders
 UseVirtualStock=Use virtual stock instead of physical stock
 RuleForStockReplenishment=Rule for stocks replenishment
 SelectProduct=Select at least one product
+AlertOnly= Alerts only
 WarehouseForStockDecrease=The warehouse <b>%s</b> will be used for stock decrease
 WarehouseForStockIncrease=The warehouse <b>%s</b> will be used for stock increase

@@ -47,6 +47,7 @@ $snom = GETPOST('snom', 'alpha');
 $sall = GETPOST('sall', 'alpha');
 $type = GETPOST('type','int');
 $tobuy = GETPOST('tobuy', 'int');
+$salert = GETPOST('salert', 'alpha');
 
 $sortfield = GETPOST('sortfield','alpha');
 $sortorder = GETPOST('sortorder','alpha');
@@ -66,9 +67,16 @@ $offset = $limit * $page ;
  * Actions
  */
 
+if (isset($_POST['button_removefilter']) || isset($_POST['valid'])) {
+    $sref = '';
+    $snom = '';
+    $sal = '';
+    $salert = '';
+}
+
 //orders creation
 //FIXME: could go in the lib
-if ($action == 'order') {
+if ($action == 'order' && isset($_POST['valid'])) {
     $linecount = GETPOST('linecount', 'int');
     $box = 0;
     unset($_POST['linecount']);
@@ -173,10 +181,18 @@ if (dol_strlen($type)) {
     }
 }
 if ($sref) {
-    $sql .= ' AND p.ref LIKE "%' . $sref . '%"';
+    //natural search
+    $scrit = explode(' ', $sref);
+    foreach ($scrit as $crit) {
+        $sql .= ' AND p.ref LIKE "%' . $crit . '%"';
+    }
 }
 if ($snom) {
-    $sql .= ' AND p.label LIKE "%' . $db->escape($snom) . '%"';
+    //natural search
+    $scrit = explode(' ', $snom);
+    foreach ($scrit as $crit) {
+        $sql .= ' AND p.label LIKE "%' . $db->escape($crit) . '%"';
+    }
 }
 
 $sql .= ' AND p.tobuy = 1';
@@ -190,6 +206,9 @@ $sql .= ', p.duration, p.tobuy, p.seuil_stock_alerte';
 $sql .= ', p.desiredstock';
 $sql .= ' HAVING (p.desiredstock > SUM(s.reel) or SUM(s.reel) is NULL)';
 $sql .= ' AND p.desiredstock > 0';
+if ($salert == 'on') {
+    $sql .= ' AND SUM(s.reel) < p.seuil_stock_alerte AND p.seuil_stock_alerte is not NULL';
+}
 $sql .= $db->order($sortfield,$sortorder);
 $sql .= $db->plimit($limit + 1, $offset);
 $resql = $db->query($sql);
@@ -197,11 +216,6 @@ $resql = $db->query($sql);
 if ($resql) {
     $num = $db->num_rows($resql);
     $i = 0;
-    if ($num == 1 && ($sall or $snom or $sref)) {
-        $objp = $db->fetch_object($resql);
-        header('Location: ../fiche.php?id=' . $objp->rowid);
-        exit;
-    }
 
     $helpurl = 'EN:Module_Stocks_En|FR:Module_Stock|';
     $helpurl .= 'ES:M&oacute;dulo_Stocks';
@@ -354,13 +368,15 @@ if ($resql) {
              '</td>';
     }
     echo '<td class="liste_titre">&nbsp;</td>',
-         '<td class="liste_titre">&nbsp;</td>',
+         '<td class="liste_titre" align="right">' . $langs->trans('AlertOnly') . '&nbsp;<input type="checkbox" name="salert"></td>',
          '<td class="liste_titre" align="right">&nbsp;</td>',
          '<td class="liste_titre">&nbsp;</td>',
          '<td class="liste_titre">&nbsp;</td>',
          '<td class="liste_titre" align="right">',
          '<input type="image" class="liste_titre" name="button_search"',
          'src="' . DOL_URL_ROOT . '/theme/' . $conf->theme . '/img/search.png" alt="' . $langs->trans("Search") . '">',
+         '<input type="image" class="liste_titre" name="button_removefilter"
+          src="'.DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/searchclear.png" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">',
          '</td>',
          '</tr>';
 
@@ -485,7 +501,7 @@ if ($resql) {
          '</div>',
          '<table width="100%">',
          '<tr><td align="right">',
-         '<input class="butAction" type="submit" value="' . $value . '">',
+         '<input class="butAction" type="submit" name="valid" value="' . $value . '">',
          '</td></tr></table>',
          '</form>';
 

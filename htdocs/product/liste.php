@@ -302,23 +302,34 @@ else
 
     		// Filter on categories
     	 	$moreforfilter='';
+    	 	//get all warehouses
+    		$warehouse = new Entrepot($db);
+    		$warehouse_array = $warehouse->list_array();
     		if (! empty($conf->categorie->enabled))
     		{
     		 	$moreforfilter.=$langs->trans('Categories'). ': ';
     			$moreforfilter.=$htmlother->select_categories(0,$search_categ,'search_categ',1);
     		 	$moreforfilter.=' &nbsp; &nbsp; &nbsp; ';
     		}
+    		$colspan = 9;
+    		foreach ($extralabels as $key => $label) {
+    			//only display price type extrafields
+    			if ($extrafields->attribute_type[$key] == 'price') {
+    				$colspan++;
+    			}
+    		}
+    		if (! empty($conf->stock->enabled) && $user->rights->stock->lire && $type != 1) {
+    			foreach ($warehouse_array as $warehouse) {
+    				$colspan++;
+    			}
+    		}
     	 	if ($moreforfilter)
     		{
     			print '<tr class="liste_titre">';
-    			print '<td class="liste_titre" colspan="9">';
+    			print '<td class="liste_titre" colspan="' . $colspan . '">';
     		    print $moreforfilter;
     		    print '</td></tr>';
     		}
-
-            //get all warehouses
-            $warehouse = new Entrepot($db);
-            $warehouse_array = $warehouse->list_array();
 
     		// Lignes des titres
     		print "<tr class=\"liste_titre\">";

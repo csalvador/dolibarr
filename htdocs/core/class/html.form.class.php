@@ -1493,7 +1493,7 @@ class Form
 	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "product_stock as ps ON ps.fk_product = p.rowid";
 	$sql.= " WHERE p.ref = '" . $objp->ref . "'";
 	$sql.= " AND p.entity <> " . $conf->entity;
-	$sql.= " GROUP BY e.label";
+	$sql.= " GROUP BY e.label, pp.price";
 	$sql.= " ORDER BY e.rowid";
 
 	$req = $this->db->query($sql);

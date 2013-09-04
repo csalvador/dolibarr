@@ -158,7 +158,7 @@ $title = $langs->trans('Status');
 $sql = 'SELECT p.rowid, p.ref, p.label, p.price';
 $sql .= ', p.price_ttc, p.price_base_type,p.fk_product_type';
 $sql .= ', p.tms as datem, p.duration, p.tobuy, p.seuil_stock_alerte,';
-$sql .= ' SUM(s.reel) as stock_physique';
+$sql .= ' SUM(COALESCE(s.reel, 0)) as stock_physique';
 $sql .= ', p.desiredstock';
 $sql .= ' FROM ' . MAIN_DB_PREFIX . 'product as p';
 $sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'product_fournisseur_price as pf';
@@ -204,10 +204,11 @@ $sql .= ' GROUP BY p.rowid, p.ref, p.label, p.price';
 $sql .= ', p.price_ttc, p.price_base_type,p.fk_product_type, p.tms';
 $sql .= ', p.duration, p.tobuy, p.seuil_stock_alerte';
 $sql .= ', p.desiredstock';
-$sql .= ' HAVING (p.desiredstock > SUM(s.reel) or SUM(s.reel) is NULL)';
+$sql .= ' HAVING p.desiredstock > SUM(COALESCE(s.reel, 0))';
 $sql .= ' AND p.desiredstock > 0';
 if ($salert == 'on') {
-    $sql .= ' AND SUM(s.reel) < p.seuil_stock_alerte AND p.seuil_stock_alerte is not NULL';
+    $sql .= ' AND SUM(COALESCE(s.reel, 0)) < p.seuil_stock_alerte AND p.seuil_stock_alerte is not NULL';
+    $alertchecked = 'checked="checked"';
 }
 $sql .= $db->order($sortfield,$sortorder);
 $sql .= $db->plimit($limit + 1, $offset);
@@ -368,7 +369,7 @@ if ($resql) {
              '</td>';
     }
     echo '<td class="liste_titre">&nbsp;</td>',
-         '<td class="liste_titre" align="right">' . $langs->trans('AlertOnly') . '&nbsp;<input type="checkbox" name="salert"></td>',
+         '<td class="liste_titre" align="right">' . $langs->trans('AlertOnly') . '&nbsp;<input type="checkbox" name="salert" ' . $alertchecked . '></td>',
          '<td class="liste_titre" align="right">&nbsp;</td>',
          '<td class="liste_titre">&nbsp;</td>',
          '<td class="liste_titre">&nbsp;</td>',
@@ -410,9 +411,6 @@ if ($resql) {
             $prod->type = $objp->fk_product_type;
             $ordered = ordered($prod->id);
 
-            if (!$objp->stock_physique) {
-                $objp->stock_physique = 0;
-            }
             if ($conf->global->USE_VIRTUAL_STOCK) {
                 //compute virtual stock
                 $prod->fetch($prod->id);

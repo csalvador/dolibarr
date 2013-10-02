@@ -270,12 +270,16 @@ function sqlRequest($sql, $field = null)
     }
 }
 
-
 $rates = getVatRates();
 $methods = getPaymentMethods();
 $values = getReportValues($start_date, $end_date, $rates, $methods);
 
-// TODO: Report
+// TODO: add menu entry
+// TODO: add per line verifications
+// TODO: add total verifications
+// TODO: add warning text about avoirs, accomptes et règlements partiels not supported
+
+// Report
 if ($values) {
     print '<table class="noborder">' . "\n";
 

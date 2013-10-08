@@ -28,7 +28,7 @@ $langs->load("hth");
 // Get parameters
 $start_date = GETPOST('start_date');
 $end_date = GETPOST('end_date');
-
+$preset = GETPOST('preset', 'alpha');
 
 $start_time = dol_mktime(
     0, 0, 0,
@@ -242,6 +242,177 @@ function sqlQuery($sql, $field = null)
     }
 }
 
+function getCurrentYearMonthDay()
+{
+    $current['year']= strftime("%Y", dol_now());
+    $current['month'] = strftime("%m", dol_now());
+    $current['day'] = strftime("%d", dol_now());
+
+    return $current;
+}
+
+function getFirstWeekDay($year, $month, $day)
+{
+    $fd = dol_get_first_day_week($day, $month, $year);
+
+    return array('year' => $fd['year'], 'month' => $fd['month'], 'day' => $fd['first_day']);
+}
+
+function getLastWeekDay($year, $month, $day)
+{
+    $time = dol_mktime(0, 0, 0, $month, $day, $year);
+    $time += 24 * 60 * 60 * 6; // Add a week
+    $tmparray = dol_getdate($time, true);
+
+    return array('year' => $tmparray['year'], 'month' => $tmparray['mon'], 'day' => $tmparray['mday']);
+}
+
+function getFirstMonthDay($year, $month)
+{
+    $time = dol_get_first_day($year, $month);
+    $tmparray = dol_getdate($time, true);
+
+    return array('year' => $tmparray['year'], 'month' => $tmparray['mon'], 'day' => $tmparray['mday']);
+}
+
+function getLastMonthDay($year, $month)
+{
+    $time = dol_get_last_day($year, $month);
+    $tmparray = dol_getdate($time, true);
+
+    return array('year' => $tmparray['year'], 'month' => $tmparray['mon'], 'day' => $tmparray['mday']);
+}
+
+function getFirstQuarterDay($year, $month)
+{
+    switch ($month) {
+    case 1:
+    case 2:
+    case 3:
+        $day = getFirstMonthDay($year, 1);
+        break;
+    case 4:
+    case 5:
+    case 6:
+        $day = getFirstMonthDay($year, 4);
+        break;
+    case 7:
+    case 8:
+    case 9:
+        $day = getFirstMonthDay($year, 7);
+        break;
+    case 10:
+    case 11:
+    case 12:
+        $day = getFirstMonthDay($year, 10);
+        break;
+    }
+
+    return $day;
+}
+
+function getLastQuarterDay($year, $month)
+{
+    switch ($month) {
+    case 1:
+    case 2:
+    case 3:
+        $day = getLastMonthDay($year, 3);
+        break;
+    case 4:
+    case 5:
+    case 6:
+        $day = getLastMonthDay($year, 6);
+        break;
+    case 7:
+    case 8:
+    case 9:
+        $day = getLastMonthDay($year, 9);
+        break;
+    case 10:
+    case 11:
+    case 12:
+        $day = getLastMonthDay($year, 12);
+        break;
+    }
+
+    return $day;
+}
+
+function getFirstYearDay($year)
+{
+    $time = dol_get_first_day($year);
+    $tmparray = dol_getdate($time, true);
+
+    return array('year' => $tmparray['year'], 'month' => $tmparray['mon'], 'day' => $tmparray['mday']);
+
+}
+
+function getLastYearDay($year)
+{
+    $time = dol_get_last_day($year);
+    $tmparray = dol_getdate($time, true);
+
+    return array('year' => $tmparray['year'], 'month' => $tmparray['mon'], 'day' => $tmparray['mday']);
+}
+
+function getCurrentDayStartEnd()
+{
+    $current = getCurrentYearMonthDay();
+    $day['start'] = dol_mktime(0, 0, 0, $current['month'], $current['day'], $current['year']);
+    $day['end'] = dol_mktime(23, 59, 0, $current['month'], $current['day'], $current['year']);
+
+    return $day;
+}
+
+function getCurrentWeekStartEnd()
+{
+    $current = getCurrentYearMonthDay();
+    $first_day = getFirstWeekDay($current['year'], $current['month'], $current['day']);
+    $last_day = getLastWeekDay($first_day['year'], $first_day['month'], $first_day['day']);
+
+    $week['start'] = dol_mktime(0, 0, 0, $first_day['month'], $first_day['day'], $first_day['year']);
+    $week['end'] = dol_mktime(23, 59, 0, $last_day['month'], $last_day['day'], $last_day['year']);
+
+    return $week;
+}
+
+function getCurrentMonthStartEnd()
+{
+    $current = getCurrentYearMonthDay();
+    $first_day = getFirstMonthDay($current['year'], $current['month']);
+    $last_day = getLastMonthDay($current['year'], $current['month']);
+
+    $month['start'] = dol_mktime(0, 0, 0, $first_day['month'], $first_day['day'], $first_day['year']);
+    $month['end'] = dol_mktime(23, 59, 0, $last_day['month'], $last_day['day'], $last_day['year']);
+
+    return $month;
+}
+
+function getCurrentQuarterStartEnd()
+{
+    $current = getCurrentYearMonthDay();
+    $first_day = getFirstQuarterDay($current['year'], $current['month']);
+    $last_day = getLastQuarterDay($current['year'], $current['month']);
+
+    $quarter['start'] = dol_mktime(0, 0, 0, $first_day['month'], $first_day['day'], $first_day['year']);
+    $quarter['end'] = dol_mktime(23, 59, 0, $last_day['month'], $last_day['day'], $last_day['year']);
+
+    return $quarter;
+}
+
+function getCurrentYearStartEnd()
+{
+    $current = getCurrentYearMonthDay();
+    $first_day = getFirstYearDay($current['year']);
+    $last_day = getLastYearDay($current['year']);
+
+    $year['start'] = dol_mktime(0, 0, 0, $first_day['month'], $first_day['day'], $first_day['year']);
+    $year['end'] = dol_mktime(23, 59, 0, $last_day['month'], $last_day['day'], $last_day['year']);
+
+    return $year;
+}
+
 // Protection
 if ($user->societe_id > 0
     || ! $user->rights->compta->resultat->lire
@@ -262,13 +433,16 @@ if ($end_time < $start_time) {
 }
 
 // Period management
-if ($start_date === '' && $end_date === '') {
+if (($start_date === '' && $end_date === '') || $preset !== '') {
     // Defaul period is the current day
-    $current_year = strftime("%Y", dol_now());
-    $current_month = strftime("%m", dol_now());
-    $current_day = strftime("%d", dol_now());
-    $start_date = dol_mktime(0, 0, 0, $current_month, $current_day, $current_year, 1, 0);
-    $end_date = dol_mktime(23, 59, 0, $current_month, $current_day, $current_year, 1, 0);
+    if ($preset === '') {
+        $preset = 'Day';
+    }
+    $type = $preset;
+    $function = 'getCurrent' . $type . 'StartEnd';
+    $cd = $function();
+    $start_date = $cd['start'];
+    $end_date = $cd['end'];
 } else {
     // We get the POST dates
     $start_date = $start_time;
@@ -293,14 +467,22 @@ if (GETPOST("optioncss") !== 'print') {
         '</div>';
 
     // Period selection
-    // TODO: add presets for day, month and quarter
+    // TODO: add presets for day, week, month and quarter
     echo '<form method="POST" id="sort">';
     echo '	<fieldset>';
     echo '		<legend>' . $langs->trans("Period") . '</legend>';
 
     echo $form->select_date($start_date, 'start_date', 0, 0, 0, '', 1, 0, 1);
-    echo' - ';
+    echo ' - ';
     echo $form->select_date($end_date, 'end_date', 0, 0, 0, '', 1, 0, 1);
+
+    // Presets
+    echo '<br>';
+    echo '<button name="preset" value="Day">Jour</button>';
+    echo '<button name="preset" value="Week">Semaine</button>';
+    echo '<button name="preset" value="Month">Mois</button>';
+    echo '<button name="preset" value="Quarter">Trimestre</button>';
+    echo '<button name="preset" value="Year">Année</button>';
 
     echo '	</fieldset>';
     echo '<div class="tabsAction">';

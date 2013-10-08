@@ -35,6 +35,7 @@ global  $bc, $db, $langs, $user;
 
 $langs->load("companies");
 $langs->load("other");
+$langs->load("hth");
 
 // Get parameters
 $start_date = GETPOST('start_date');
@@ -256,6 +257,10 @@ dol_htmloutput_mesg($mesg);
 
 $form = new Form($db);
 
+echo '<div class="warning">',
+    $langs->trans("CreditNotesDepositsAndPartialPaymentsNotSupported"),
+    '</div>';
+
 // Period selection
 echo '<form method="POST" id="sort">';
 echo '	<fieldset>';
@@ -278,7 +283,6 @@ $values = getReportValues($start_date, $end_date, $rates, $methods);
 // TODO: add menu entry
 // TODO: add per line verifications
 // TODO: add total verifications
-// TODO: add warning text about avoirs, accomptes et règlements partiels not supported
 
 // Report
 if ($values) {

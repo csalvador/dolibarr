@@ -1,0 +1,4 @@
+# Dolibarr language file - fr_FR - hth
+CHARSET= UTF-8
+
+CreditNotesDepositsAndPartialPaymentsNotSupported = Acomptes, avoirs et règlements partiels non pris en charge.<br>Ces derniers génèreront des erreurs.

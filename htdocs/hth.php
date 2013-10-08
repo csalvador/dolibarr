@@ -51,6 +51,11 @@ $end_time = dol_mktime(
     $_REQUEST["end_datemonth"], $_REQUEST["end_dateday"], $_REQUEST["end_dateyear"]
 );
 
+/**
+ * List available VAT rates
+ *
+ * @return array|null
+ */
 function getVatRates()
 {
     $select =  'taux';
@@ -58,18 +63,31 @@ function getVatRates()
     $sql_vat_rates .= ' FROM ' . MAIN_DB_PREFIX . 'c_tva';
     $sql_vat_rates .= ' WHERE fk_pays = \'1\' AND active = \'1\'';
     $sql_vat_rates .= ' ORDER BY ' . $select . ' ASC;';
-    return sqlRequest($sql_vat_rates, $select);
+    return sqlQuery($sql_vat_rates, $select);
 }
 
+/**
+ * List available payment methods
+ *
+ * @return array|null
+ */
 function getPaymentMethods()
 {
     $select = 'libelle';
     $sql_payments_method = 'SELECT ' . $select;
     $sql_payments_method .= ' FROM ' . MAIN_DB_PREFIX . 'c_paiement';
     $sql_payments_method .= ' WHERE active = \'1\' AND (type = \'0\' OR type = \'2\');';
-    return sqlRequest($sql_payments_method, $select);
+    return sqlQuery($sql_payments_method, $select);
 }
 
+/**
+ * List all VAT amounts within the specified boundaries
+ *
+ * @param timestamp $start_date Period start
+ * @param timestamp $end_date   Period end
+ *
+ * @return array|null
+ */
 function getVatAmountAndRateByDate($start_date, $end_date)
 {
     global $conf, $db;
@@ -102,9 +120,17 @@ function getVatAmountAndRateByDate($start_date, $end_date)
     $sql_vat_total .= ' ORDER BY ';
     $sql_vat_total .= 'date;';
 
-    return sqlRequest($sql_vat_total);
+    return sqlQuery($sql_vat_total);
 }
 
+/**
+ * List all payments within the specified boundaries
+ *
+ * @param timestamp $start_date Period start
+ * @param timestamp $end_date   Period end
+ *
+ * @return array|null
+ */
 function getPaymentAmountAndMethodByDate($start_date, $end_date)
 {
     global $conf, $db;
@@ -138,9 +164,19 @@ function getPaymentAmountAndMethodByDate($start_date, $end_date)
     $sql_payment_total .= ' ORDER BY ';
     $sql_payment_total .= 'date;';
 
-    return sqlRequest($sql_payment_total);
+    return sqlQuery($sql_payment_total);
 }
 
+/**
+ * Build report data
+ *
+ * @param timestamp $start_date Period start
+ * @param timestamp $end_date   Period end
+ * @param array     $rates      VAT rates of interest
+ * @param array     $methods    Payment methods of interest
+ *
+ * @return null
+ */
 function getReportValues($start_date, $end_date, $rates, $methods)
 {
     $sql_vat = getVatAmountAndRateByDate($start_date, $end_date);
@@ -178,7 +214,15 @@ function getReportValues($start_date, $end_date, $rates, $methods)
     return $values;
 }
 
-function sqlRequest($sql, $field = null)
+/**
+ * Simple SQL query
+ *
+ * @param string $sql   Query string
+ * @param null   $field Result field to extract
+ *
+ * @return array|null
+ */
+function sqlQuery($sql, $field = null)
 {
     global $db;
     $result = array();

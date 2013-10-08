@@ -1442,7 +1442,15 @@ function top_menu($head, $title='', $target='', $disablejs=0, $disablehead=0, $a
 	    // Link to print main content area
 	    if (empty($conf->global->MAIN_PRINT_DISABLELINK) && empty($conf->browser->phone))
 	    {
-	        $qs=$_SERVER["QUERY_STRING"].($_SERVER["QUERY_STRING"]?'&':'').$morequerystring;
+		// Get all parameters
+		foreach ($_REQUEST as $key => $value) {
+			// More than one parameter
+			if ($request) {
+				$request .= '&';
+			}
+			$request .= $key . '=' . $value;
+		}
+	        $qs=$request.($request?'&':'').$morequerystring;
 	        $text ='<a href="'.$_SERVER["PHP_SELF"].'?'.$qs.($qs?'&amp;':'').'optioncss=print" target="_blank">';
 	        $text.= img_picto('', 'printer.png', 'class="printer"');
 	        $text.='</a>';

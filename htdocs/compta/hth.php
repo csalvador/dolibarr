@@ -188,7 +188,7 @@ function getReportValues($start_date, $end_date, $rates, $methods)
         $values[$v->date]['vat'] = $vat;
         $date = $v->date;
     }
-    //$payment = array('method' => 'amount');
+    $payment = null;// array('method' => 'amount');
     foreach ($sql_payment as $p) {
         if ($date != $p->date) {
             foreach ($methods as $m) {

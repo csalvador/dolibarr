@@ -313,7 +313,8 @@ if (GETPOST("optioncss") !== 'print') {
         $report_name,
         '</h1>',
         '<br>',
-        dol_print_date($start_date, 'daytext'), ' - ', dol_print_date($end_date, 'daytext');
+        dol_print_date($start_date, 'daytext'), ' - ', dol_print_date($end_date, 'daytext'),
+        '<br>';
 }
 
 $rates = getVatRates();
@@ -401,7 +402,7 @@ if ($values) {
 
     print '</table>' . "\n";
 } else {
-    print $langs->trans("NoData");
+    echo '<em>', $langs->trans("NoData"), '</em>';
 }
 
 // End of page

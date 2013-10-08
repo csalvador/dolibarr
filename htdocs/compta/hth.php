@@ -242,12 +242,12 @@ function sqlQuery($sql, $field = null)
     }
 }
 
-// Protection if external user
-if ($user->societe_id > 0) {
+// Protection
+if ($user->societe_id > 0
+    || ! $user->rights->compta->resultat->lire
+) {
     accessforbidden();
 }
-
-// FIXME: add rights
 
 /*******************************************************************
  * ACTIONS

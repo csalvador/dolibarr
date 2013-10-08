@@ -865,7 +865,8 @@ function print_left_eldy_menu($db,$menu_array_before,$menu_array_after,&$tabMenu
 				if (empty($leftmenu) || $leftmenu=="ca") $newmenu->add("/compta/journal/purchasesjournal.php?leftmenu=ca",$langs->trans("PurchasesJournal"),1,$user->rights->compta->resultat->lire||$user->rights->accounting->comptarapport->lire);
 
                 // HTH report custom menu
-                if (empty($leftmenu) || $leftmenu=="ca") $newmenu->add("/compta/hth.php?leftmenu=ca",$langs->trans("Report"),1,$user->rights->compta->resultat->lire||$user->rights->accounting->comptarapport->lire);
+                $langs->load("hth");
+                if (empty($leftmenu) || $leftmenu=="ca") $newmenu->add("/compta/hth.php?leftmenu=ca",$langs->trans("VatAndPaymentsReport"),1,$user->rights->compta->resultat->lire||$user->rights->accounting->comptarapport->lire);
 			}
 		}
 

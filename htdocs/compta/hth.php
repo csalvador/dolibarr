@@ -263,17 +263,12 @@ if ($end_time < $start_time) {
 
 // Period management
 if ($start_date === '' && $end_date === '') {
-    // Defaul period is the previous month
+    // Defaul period is the current day
     $current_year = strftime("%Y", dol_now());
     $current_month = strftime("%m", dol_now());
-    $past_month_year = $current_year;
-    if ($current_month === 0) {
-        $current_month = 12;
-        $past_month_year --;
-    }
-
-    $start_date = dol_get_first_day($past_month_year, $current_month, false);
-    $end_date = dol_get_last_day($past_month_year, $current_month, false);
+    $current_day = strftime("%d", dol_now());
+    $start_date = dol_mktime(0, 0, 0, $current_month, $current_day, $current_year, 1, 0);
+    $end_date = dol_mktime(23, 59, 0, $current_month, $current_day, $current_year, 1, 0);
 } else {
     // We get the POST dates
     $start_date = $start_time;

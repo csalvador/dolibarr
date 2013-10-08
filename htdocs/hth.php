@@ -31,7 +31,7 @@ require './main.inc.php';
 
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 
-global $langs, $bc;
+global  $bc, $db, $langs, $user;
 
 $langs->load("companies");
 $langs->load("other");
@@ -50,6 +50,162 @@ $end_time = dol_mktime(
     $_REQUEST["end_datemonth"], $_REQUEST["end_dateday"], $_REQUEST["end_dateyear"]
 );
 
+function getVatRates()
+{
+    $select =  'taux';
+    $sql_vat_rates = 'SELECT '. $select;
+    $sql_vat_rates .= ' FROM ' . MAIN_DB_PREFIX . 'c_tva';
+    $sql_vat_rates .= ' WHERE fk_pays = \'1\' AND active = \'1\'';
+    $sql_vat_rates .= ' ORDER BY ' . $select . ' ASC;';
+    return sqlRequest($sql_vat_rates, $select);
+}
+
+function getPaymentMethods()
+{
+    $select = 'libelle';
+    $sql_payments_method = 'SELECT ' . $select;
+    $sql_payments_method .= ' FROM ' . MAIN_DB_PREFIX . 'c_paiement';
+    $sql_payments_method .= ' WHERE active = \'1\' AND (type = \'0\' OR type = \'2\');';
+    return sqlRequest($sql_payments_method, $select);
+}
+
+function getVatAmountAndRateByDate($start_date, $end_date)
+{
+    global $conf, $db;
+
+    $sql_vat_total = 'SELECT ';
+    $sql_vat_total .= 'f.datef AS date,';
+    $sql_vat_total .= 'fd.tva_tx AS rate,';
+    $sql_vat_total .= 'SUM(fd.total_ttc) AS vat';
+    $sql_vat_total .= ' FROM ';
+    $sql_vat_total .= MAIN_DB_PREFIX . 'facture AS f';
+    $sql_vat_total .= ' LEFT JOIN ';
+    $sql_vat_total .= MAIN_DB_PREFIX . 'facturedet AS fd ON fd.fk_facture = f.rowid';
+    // Filter milestones out
+    $sql_vat_total .= ' AND ';
+    $sql_vat_total .= 'fd.special_code = \'0\'';
+    $sql_vat_total .= ' WHERE ';
+    $sql_vat_total .= 'f.type = \'0\'';
+    $sql_vat_total .= ' AND ';
+    $sql_vat_total .= 'f.paye = \'1\'';
+    $sql_vat_total .= ' AND ';
+    $sql_vat_total .= 'f.fk_statut = \'2\'';
+    $sql_vat_total .= ' AND ';
+    $sql_vat_total .= 'f.entity = \'' . $conf->entity . '\'';
+    $sql_vat_total .= ' AND ';
+    $sql_vat_total .= 'f.datef >= \'' .$db->idate($start_date) . '\'';
+    $sql_vat_total .= ' AND ';
+    $sql_vat_total .= 'f.datef <= \'' . $db->idate($end_date) . '\'';
+    $sql_vat_total .= ' GROUP BY ';
+    $sql_vat_total .= 'date, fd.tva_tx';
+    $sql_vat_total .= ' ORDER BY ';
+    $sql_vat_total .= 'date;';
+
+    return sqlRequest($sql_vat_total);
+}
+
+function getPaymentAmountAndMethodByDate($start_date, $end_date)
+{
+    global $conf, $db;
+
+    $sql_payment_total = 'SELECT ';
+    $sql_payment_total .= 'f.datef AS date,';
+    $sql_payment_total .= 'SUM(pf.amount) AS payment,';
+    $sql_payment_total .= 'pt.libelle AS method';
+    $sql_payment_total .= ' FROM ';
+    $sql_payment_total .= 'llx_facture AS f';
+    $sql_payment_total .= ' LEFT JOIN ';
+    $sql_payment_total .= 'llx_paiement_facture AS pf ON pf.fk_facture = f.rowid';
+    $sql_payment_total .= ' LEFT JOIN ';
+    $sql_payment_total .= 'llx_paiement AS p ON p.rowid = pf.fk_paiement';
+    $sql_payment_total .= ' LEFT JOIN ';
+    $sql_payment_total .= 'llx_c_paiement AS pt ON pt.id = p.fk_paiement AND pt.active = \'1\' AND (pt.type = \'0\' OR pt.type = \'2\')';
+    $sql_payment_total .= ' WHERE ';
+    $sql_payment_total .= 'f.type = \'0\'';
+    $sql_payment_total .= ' AND ';
+    $sql_payment_total .= 'f.paye = \'1\'';
+    $sql_payment_total .= ' AND ';
+    $sql_payment_total .= 'f.fk_statut = \'2\'';
+    $sql_payment_total .= ' AND ';
+    $sql_payment_total .= 'f.entity = \'' . $conf->entity . '\'';
+    $sql_payment_total .= ' AND ';
+    $sql_payment_total .= 'f.datef >= \'' .$db->idate($start_date) . '\'';
+    $sql_payment_total .= ' AND ';
+    $sql_payment_total .= 'f.datef <= \'' . $db->idate($end_date) . '\'';
+    $sql_payment_total .= ' GROUP BY ';
+    $sql_payment_total .= 'date, method';
+    $sql_payment_total .= ' ORDER BY ';
+    $sql_payment_total .= 'date;';
+
+    return sqlRequest($sql_payment_total);
+}
+
+function getReportValues($start_date, $end_date, $rates, $methods)
+{
+    $sql_vat = getVatAmountAndRateByDate($start_date, $end_date);
+    $sql_payment = getPaymentAmountAndMethodByDate($start_date, $end_date);
+
+    // Combine both
+    $values = null; //array('date' => 'amounts');
+    $vat = null; // array('rate' => 'amount');
+    $date = null;
+
+    foreach ($sql_vat as $v) {
+        if ($date != $v->date) {
+            foreach ($rates as $r) {
+                $vat[price($r)] = price('0');
+            }
+        }
+        $values['total'][price($v->rate)] += $v->vat;
+        $vat[price($v->rate)] = price($v->vat);
+        $values[$v->date]['vat'] = $vat;
+        $date = $v->date;
+    }
+    //$payment = array('method' => 'amount');
+    foreach ($sql_payment as $p) {
+        if ($date != $p->date) {
+            foreach ($methods as $m) {
+                $payment[$m] = price('0');
+            }
+        }
+        $values['total'][$p->method] += $p->payment;
+        $payment[$p->method] = price($p->payment);
+        $values[$p->date]['payment'] = $payment;
+        $date = $p->date;
+    }
+
+    return $values;
+}
+
+function sqlRequest($sql, $field = null)
+{
+    global $db;
+    $result = array();
+
+    dol_syslog(__FILE__ . " sql=" . $sql, LOG_DEBUG);
+    $resql = $db->query($sql);
+    if ($resql) {
+        $num = $db->num_rows($resql);
+        $i = 0;;
+        if ($num) {
+            while ($i < $num) {
+                $obj = $db->fetch_object($resql);
+                if ($obj) {
+                    if ($field) {
+                        $result[$i] = $obj->$field;
+                    } else {
+                        $result[$i] = $obj;
+                    }
+                }
+                $i++;
+            }
+        }
+        return $result;
+    } else {
+        dol_print_error($db);
+        return null;
+    }
+}
 
 // Protection if external user
 if ($user->societe_id > 0) {
@@ -114,161 +270,6 @@ echo '<div class="tabsAction">';
 echo '	<input class="butAction" type="submit" value="' . $langs->trans("Generate") . '">';
 echo '</div>';
 echo '<form>';
-
-function getVatRates()
-{
-    $select =  'taux';
-    $sql_vat_rates = 'SELECT '. $select;
-    $sql_vat_rates .= ' FROM ' . MAIN_DB_PREFIX . 'c_tva';
-    $sql_vat_rates .= ' WHERE fk_pays = \'1\' AND active = \'1\'';
-    $sql_vat_rates .= ' ORDER BY ' . $select . ' ASC;';
-    return sqlRequest($sql_vat_rates, $select);
-}
-
-function getPaymentMethods()
-{
-    $select = 'libelle';
-    $sql_payments_method = 'SELECT ' . $select;
-    $sql_payments_method .= ' FROM ' . MAIN_DB_PREFIX . 'c_paiement';
-    $sql_payments_method .= ' WHERE active = \'1\' AND (type = \'0\' OR type = \'2\');';
-    return sqlRequest($sql_payments_method, $select);
-}
-
-function getVatAmountAndRateByDate($start_date, $end_date) {
-    global $conf, $db;
-
-    $sql_vat_total = 'SELECT ';
-    $sql_vat_total .= 'f.datef AS date,';
-    $sql_vat_total .= 'fd.tva_tx AS rate,';
-    $sql_vat_total .= 'SUM(fd.total_ttc) AS vat';
-    $sql_vat_total .= ' FROM ';
-    $sql_vat_total .= MAIN_DB_PREFIX . 'facture AS f';
-    $sql_vat_total .= ' LEFT JOIN ';
-    $sql_vat_total .= MAIN_DB_PREFIX . 'facturedet AS fd ON fd.fk_facture = f.rowid';
-    // Filter milestones out
-    $sql_vat_total .= ' AND ';
-    $sql_vat_total .= 'fd.special_code = \'0\'';
-    $sql_vat_total .= ' WHERE ';
-    $sql_vat_total .= 'f.type = \'0\'';
-    $sql_vat_total .= ' AND ';
-    $sql_vat_total .= 'f.paye = \'1\'';
-    $sql_vat_total .= ' AND ';
-    $sql_vat_total .= 'f.fk_statut = \'2\'';
-    $sql_vat_total .= ' AND ';
-    $sql_vat_total .= 'f.entity = \'' . $conf->entity . '\'';
-    $sql_vat_total .= ' AND ';
-    $sql_vat_total .= 'f.datef >= \'' .$db->idate($start_date) . '\'';
-    $sql_vat_total .= ' AND ';
-    $sql_vat_total .= 'f.datef <= \'' . $db->idate($end_date) . '\'';
-    $sql_vat_total .= ' GROUP BY ';
-    $sql_vat_total .= 'date, fd.tva_tx';
-    $sql_vat_total .= ' ORDER BY ';
-    $sql_vat_total .= 'date;';
-
-    return sqlRequest($sql_vat_total);
-}
-
-function getPaymentAmountAndMethodByDate($start_date, $end_date) {
-    global $conf, $db;
-
-    $sql_payment_total = 'SELECT ';
-    $sql_payment_total .= 'f.datef AS date,';
-    $sql_payment_total .= 'SUM(pf.amount) AS payment,';
-    $sql_payment_total .= 'pt.libelle AS method';
-    $sql_payment_total .= ' FROM ';
-    $sql_payment_total .= 'llx_facture AS f';
-    $sql_payment_total .= ' LEFT JOIN ';
-    $sql_payment_total .= 'llx_paiement_facture AS pf ON pf.fk_facture = f.rowid';
-    $sql_payment_total .= ' LEFT JOIN ';
-    $sql_payment_total .= 'llx_paiement AS p ON p.rowid = pf.fk_paiement';
-    $sql_payment_total .= ' LEFT JOIN ';
-    $sql_payment_total .= 'llx_c_paiement AS pt ON pt.id = p.fk_paiement AND pt.active = \'1\' AND (pt.type = \'0\' OR pt.type = \'2\')';
-    $sql_payment_total .= ' WHERE ';
-    $sql_payment_total .= 'f.type = \'0\'';
-    $sql_payment_total .= ' AND ';
-    $sql_payment_total .= 'f.paye = \'1\'';
-    $sql_payment_total .= ' AND ';
-    $sql_payment_total .= 'f.fk_statut = \'2\'';
-    $sql_payment_total .= ' AND ';
-    $sql_payment_total .= 'f.entity = \'' . $conf->entity . '\'';
-    $sql_payment_total .= ' AND ';
-    $sql_payment_total .= 'f.datef >= \'' .$db->idate($start_date) . '\'';
-    $sql_payment_total .= ' AND ';
-    $sql_payment_total .= 'f.datef <= \'' . $db->idate($end_date) . '\'';
-    $sql_payment_total .= ' GROUP BY ';
-    $sql_payment_total .= 'date, method';
-    $sql_payment_total .= ' ORDER BY ';
-    $sql_payment_total .= 'date;';
-
-    return sqlRequest($sql_payment_total);
-}
-
-function getReportValues($start_date, $end_date, $rates, $methods) {
-    $sql_vat = getVatAmountAndRateByDate($start_date, $end_date);
-    $sql_payment = getPaymentAmountAndMethodByDate($start_date, $end_date);
-
-    // Combine both
-    //$values = array('date' => 'amounts');
-    //$vat = array('rate' => 'amount');
-    $date = null;
-
-    foreach ($sql_vat as $v) {
-        if ($date != $v->date) {
-            foreach ($rates as $r) {
-                $vat[price($r)] = price('0');
-            }
-        }
-        $values['total'][price($v->rate)] += $v->vat;
-        $vat[price($v->rate)] = price($v->vat);
-        $values[$v->date]['vat'] = $vat;
-        $date = $v->date;
-    }
-    //$payment = array('method' => 'amount');
-    foreach ($sql_payment as $p) {
-        if ($date != $p->date) {
-            foreach ($methods as $m) {
-                $payment[$m] = price('0');
-            }
-        }
-        $values['total'][$p->method] += $p->payment;
-        $payment[$p->method] = price($p->payment);
-        $values[$p->date]['payment'] = $payment;
-        $date = $p->date;
-    }
-
-
-
-    return $values;
-}
-
-function sqlRequest($sql, $field = null)
-{
-    global $db;
-    $result = array();
-
-    dol_syslog(__FILE__ . " sql=" . $sql, LOG_DEBUG);
-    $resql = $db->query($sql);
-    if ($resql) {
-        $num = $db->num_rows($resql);
-        $i = 0;;
-        if ($num) {
-            while ($i < $num) {
-                $obj = $db->fetch_object($resql);
-                if ($obj) {
-                    if ($field) {
-                        $result[$i] = $obj->$field;
-                    } else {
-                        $result[$i] = $obj;
-                    }
-                }
-                $i++;
-            }
-        }
-        return $result;
-    } else {
-        dol_print_error($db);
-    }
-}
 
 $rates = getVatRates();
 $methods = getPaymentMethods();

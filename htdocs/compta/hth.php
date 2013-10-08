@@ -278,10 +278,9 @@ if ($start_date === '' && $end_date === '') {
 /***************************************************
  * VIEW
  ****************************************************/
-// FIXME: find a better page name
 $report_name = $langs->Trans("VatAndPaymentsReport");
 
-llxHeader('', $report_name, '');
+llxHeader(null, $report_name);
 
 // Information message
 dol_htmloutput_mesg($mesg);

@@ -15,19 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-//if (! defined('NOREQUIREUSER'))  define('NOREQUIREUSER','1');
-//if (! defined('NOREQUIREDB'))    define('NOREQUIREDB','1');
-//if (! defined('NOREQUIRESOC'))   define('NOREQUIRESOC','1');
-//if (! defined('NOREQUIRETRAN'))  define('NOREQUIRETRAN','1');
-//if (! defined('NOCSRFCHECK'))    define('NOCSRFCHECK','1');			// Do not check anti CSRF attack test
-//if (! defined('NOSTYLECHECK'))   define('NOSTYLECHECK','1');			// Do not check style html tag into posted data
-//if (! defined('NOTOKENRENEWAL')) define('NOTOKENRENEWAL','1');		// Do not check anti POST attack test
-//if (! defined('NOREQUIREMENU'))  define('NOREQUIREMENU','1');			// If there is no need to load and show top and left menu
-//if (! defined('NOREQUIREHTML'))  define('NOREQUIREHTML','1');			// If we don't need to load the html.form.class.php
-//if (! defined('NOREQUIREAJAX'))  define('NOREQUIREAJAX','1');
-//if (! defined("NOLOGIN"))        define("NOLOGIN",'1');				// If this page is public (can be called outside logged session)
-
-require './main.inc.php';
+require '../main.inc.php';
 
 require_once DOL_DOCUMENT_ROOT . '/core/lib/date.lib.php';
 
@@ -146,7 +134,9 @@ function getPaymentAmountAndMethodByDate($start_date, $end_date)
     $sql_payment_total .= ' LEFT JOIN ';
     $sql_payment_total .= 'llx_paiement AS p ON p.rowid = pf.fk_paiement';
     $sql_payment_total .= ' LEFT JOIN ';
-    $sql_payment_total .= 'llx_c_paiement AS pt ON pt.id = p.fk_paiement AND pt.active = \'1\' AND (pt.type = \'0\' OR pt.type = \'2\')';
+    $sql_payment_total .= 'llx_c_paiement AS pt';
+    $sql_payment_total .= ' ON ';
+    $sql_payment_total .= 'pt.id = p.fk_paiement AND pt.active = \'1\' AND (pt.type = \'0\' OR pt.type = \'2\')';
     $sql_payment_total .= ' WHERE ';
     $sql_payment_total .= 'f.type = \'0\'';
     $sql_payment_total .= ' AND ';

@@ -284,31 +284,42 @@ if ($start_date === '' && $end_date === '') {
  * VIEW
  ****************************************************/
 // FIXME: find a better page name
-llxHeader('', 'Rapport', '');
+$report_name = $langs->Trans("Report");
+
+llxHeader('', $report_name, '');
 
 // Information message
 dol_htmloutput_mesg($mesg);
 
 $form = new Form($db);
 
-echo '<div class="warning">',
-    $langs->trans("CreditNotesDepositsAndPartialPaymentsNotSupported"),
-    '</div>';
+if (GETPOST("optioncss") !== 'print') {
+    echo '<div class="warning">',
+        $langs->trans("CreditNotesDepositsAndPartialPaymentsNotSupported"),
+        '</div>';
 
-// Period selection
-echo '<form method="POST" id="sort">';
-echo '	<fieldset>';
-echo '		<legend>' . $langs->trans("Period") . '</legend>';
+    // Period selection
+    // TODO: add presets for day, month and quarter
+    echo '<form method="POST" id="sort">';
+    echo '	<fieldset>';
+    echo '		<legend>' . $langs->trans("Period") . '</legend>';
 
-echo $form->select_date($start_date, 'start_date', 0, 0, 0, '', 1, 0, 1);
-echo' - ';
-echo $form->select_date($end_date, 'end_date', 0, 0, 0, '', 1, 0, 1);
+    echo $form->select_date($start_date, 'start_date', 0, 0, 0, '', 1, 0, 1);
+    echo' - ';
+    echo $form->select_date($end_date, 'end_date', 0, 0, 0, '', 1, 0, 1);
 
-echo '	</fieldset>';
-echo '<div class="tabsAction">';
-echo '	<input class="butAction" type="submit" value="' . $langs->trans("Generate") . '">';
-echo '</div>';
-echo '<form>';
+    echo '	</fieldset>';
+    echo '<div class="tabsAction">';
+    echo '	<input class="butAction" type="submit" value="' . $langs->trans("Generate") . '">';
+    echo '</div>';
+    echo '<form>';
+} else {
+    echo '<h1>',
+        $report_name,
+        '</h1>',
+        '<br>',
+        dol_print_date($start_date, 'daytext'), ' - ', dol_print_date($end_date, 'daytext');
+}
 
 $rates = getVatRates();
 $methods = getPaymentMethods();

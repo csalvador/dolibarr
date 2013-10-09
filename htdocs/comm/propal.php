@@ -1991,23 +1991,8 @@ else
 		{
 			$var=true;
 
-			if ($conf->global->MAIN_FEATURES_LEVEL > 1)
-			{
-				// Add free or predefined products/services
-				$object->formAddObjectLine(1,$mysoc,$soc);
-			}
-			else
-			{
-				// Add free products/services
-				$object->formAddFreeProduct(1,$mysoc,$soc);
-
-				// Add predefined products/services
-				if (! empty($conf->product->enabled) || ! empty($conf->service->enabled))
-				{
-					$var=!$var;
-					$object->formAddPredefinedProduct(1,$mysoc,$soc);
-				}
-			}
+            // Add free or predefined products/services
+            $object->formAddObjectLine(1,$mysoc,$soc);
 
 			$parameters=array();
 			$reshook=$hookmanager->executeHooks('formAddObjectLine',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook

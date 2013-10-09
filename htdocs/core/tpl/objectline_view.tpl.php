@@ -99,9 +99,7 @@
 
 	<td align="right" class="nowrap"><?php echo price($line->subprice); ?></td>
 
-	<?php if ($conf->global->MAIN_FEATURES_LEVEL > 1) { ?>
-	<td align="right" class="nowrap">&nbsp;</td>
-	<?php } ?>
+	<td align="right" class="nowrap"><?php echo price($line->subprice * (1+$line->tva_tx/100), null, null, null, null, 2);?></td>
 
 	<td align="right" class="nowrap">
 	<?php if ((($line->info_bits & 2) != 2) && $line->special_code != 3) {

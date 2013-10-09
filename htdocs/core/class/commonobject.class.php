@@ -2731,7 +2731,7 @@ abstract class CommonObject
 		// Price HT
 		print '<td align="right" width="80">'.$langs->trans('PriceUHT').'</td>';
 
-		if ($conf->global->MAIN_FEATURES_LEVEL > 1) print '<td align="right" width="80">&nbsp;</td>';
+		print '<td align="right" width="80">' . $langs->trans('PriceUTTC') . '</td>';
 
 		// Qty
 		print '<td align="right" width="50">'.$langs->trans('Qty').'</td>';

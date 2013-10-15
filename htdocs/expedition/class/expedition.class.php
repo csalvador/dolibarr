@@ -163,7 +163,7 @@ class Expedition extends CommonObject
 		global $conf, $langs;
 
 		$now=dol_now();
-		
+
 		if (empty($this->model_pdf)) $this->model_pdf=$conf->global->EXPEDITION_ADDON_PDF;
 
 		require_once DOL_DOCUMENT_ROOT .'/product/stock/class/mouvementstock.class.php';
@@ -224,6 +224,7 @@ class Expedition extends CommonObject
 		$sql.= ", ".(!empty($this->model_pdf)?"'".$this->db->escape($this->model_pdf)."'":"null");
 		$sql.= ")";
 
+		dol_syslog(get_class($this)."::create sql=".$sql, LOG_DEBUG);
 		$resql=$this->db->query($sql);
 		if ($resql)
 		{
@@ -323,6 +324,7 @@ class Expedition extends CommonObject
 		$sql.= ", ".$qty;
 		$sql.= ")";
 
+		dol_syslog(get_class($this)."::create_line sql=".$sql, LOG_DEBUG);
 		if (! $this->db->query($sql))
 		{
 			$error++;
@@ -1158,7 +1160,7 @@ class Expedition extends CommonObject
 			else
 			{
 				$this->error=$this->db->error();
-				dol_syslog("Commande::set_date_livraison ".$this->error,LOG_ERR);
+				dol_syslog(get_class($this)."::set_date_livraison ".$this->error,LOG_ERR);
 				return -1;
 			}
 		}

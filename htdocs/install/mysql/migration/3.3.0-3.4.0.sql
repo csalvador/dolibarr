@@ -102,7 +102,7 @@ ALTER TABLE llx_expedition DROP FOREIGN KEY fk_expedition_fk_shipping_method;
 ALTER TABLE llx_expedition DROP INDEX idx_expedition_fk_expedition_methode;
 ALTER TABLE llx_expedition CHANGE COLUMN fk_expedition_methode fk_shipping_method integer;
 
-ALTER TABLE llx_c_shipment_mode ADD COLUMN tracking VARCHAR(256) NOT NULL DEFAULT '' AFTER description;
+ALTER TABLE llx_c_shipment_mode ADD COLUMN tracking VARCHAR(255) NOT NULL DEFAULT '' AFTER description;
 
 --ALTER TABLE llx_c_shipment_mode DROP COLUMN CASCADE;
 --ALTER TABLE llx_c_shipment_mode ADD COLUMN rowid INTEGER AUTO_INCREMENT PRIMARY KEY;
@@ -249,7 +249,7 @@ CREATE TABLE llx_printer_ipp
 	datec 	datetime,
 	printer_name text NOT NULL, 
 	printer_location text NOT NULL,
-	printer_uri varchar(256) NOT NULL,
+	printer_uri varchar(255) NOT NULL,
 	copy integer NOT NULL DEFAULT '1',
 	module varchar(16) NOT NULL,
 	login varchar(32) NOT NULL
@@ -384,5 +384,8 @@ ALTER TABLE llx_fichinterdet ADD COLUMN fk_parent_line integer NULL AFTER fk_fic
 ALTER TABLE llx_societe_address CHANGE COLUMN tel phone varchar(20);
 
 insert into llx_c_tva(rowid,fk_pays,taux,recuperableonly,localtax1,localtax1_type,note,active) values (143, 14,'5','0','9.975','1','TPS and TVQ rate',1);
+
+DELETE FROM llx_document_model WHERE nom ='elevement' AND type='delivery';
+DELETE FROM llx_document_model WHERE nom ='' AND type='delivery';
 
 ALTER TABLE llx_product ADD COLUMN desiredstock integer;

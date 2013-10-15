@@ -1259,6 +1259,7 @@ class Propal extends CommonObject
      */
     function valid($user, $notrigger=0)
     {
+		require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
         global $conf,$langs;
 
         $error=0;
@@ -1305,8 +1306,31 @@ class Propal extends CommonObject
                     // Fin appel triggers
                 }
 
-                if (! $error)
-                {
+            	if (! $error)
+				{
+					// Rename directory if dir was a temporary ref
+					if (preg_match('/^[\(]?PROV/i', $this->ref))
+					{
+						// Rename of propal directory ($this->ref = old ref, $num = new ref)
+						// to  not lose the linked files
+						$facref = dol_sanitizeFileName($this->ref);
+						$snumfa = dol_sanitizeFileName($num);
+						$dirsource = $conf->propal->dir_output.'/'.$facref;
+						$dirdest = $conf->propal->dir_output.'/'.$snumfa;
+						if (file_exists($dirsource))
+						{
+							dol_syslog(get_class($this)."::validate rename dir ".$dirsource." into ".$dirdest);
+	
+							if (@rename($dirsource, $dirdest))
+							{
+	
+								dol_syslog("Rename ok");
+								// Deleting old PDF in new rep
+								dol_delete_file($conf->propal->dir_output.'/'.$snumfa.'/'.$facref.'*.*');
+							}
+						}
+					}
+					
                     $this->brouillon=0;
                     $this->statut = 1;
                     $this->user_valid_id=$user->id;
@@ -1315,13 +1339,13 @@ class Propal extends CommonObject
                     return 1;
                 }
                 else
-                {
+				{
                     $this->db->rollback();
                     return -2;
                 }
             }
             else
-            {
+			{
                 $this->db->rollback();
                 return -1;
             }
@@ -2926,7 +2950,7 @@ class PropaleLigne
         if (empty($this->info_bits)) $this->info_bits=0;
         if (empty($this->special_code)) $this->special_code=0;
         if (empty($this->fk_parent_line)) $this->fk_parent_line=0;
-        if (empty($this->fk_parent_line)) $this->fk_fournprice=0;
+        if (empty($this->fk_fournprice)) $this->fk_fournprice=0;
 
 		if (empty($this->pa_ht)) $this->pa_ht=0;
 

@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2006-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2005-2013 Regis Houssin        <regis.houssin@capnetworks.com>
  * Copyright (C) 2010-2011 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2012      Christophe Battarel  <christophe.battarel@altairis.fr>
  * Copyright (C) 2011-2012 Philippe Grand	    <philippe.grand@atoo-net.com>
@@ -663,11 +663,11 @@ abstract class CommonObject
         if ($this->origin == 'shipping') $this->origin = 'expedition';
         if ($this->origin == 'delivery') $this->origin = 'livraison';
 
-        $object = $this->origin;
+        $origin = $this->origin;
 
-        $classname = ucfirst($object);
-        $this->$object = new $classname($this->db);
-        $this->$object->fetch($this->origin_id);
+        $classname = ucfirst($origin);
+        $this->$origin = new $classname($this->db);
+        $this->$origin->fetch($this->origin_id);
     }
 
     /**
@@ -1093,9 +1093,9 @@ abstract class CommonObject
 					$row = $this->db->fetch_row($resql);
 					$rows[] = $row[0];	// Add parent line into array rows
 					$childrens = $this->getChildrenOfLine($row[0]);
-					if (! empty($children))
+					if (! empty($childrens))
 					{
-						foreach($children as $child)
+						foreach($childrens as $child)
 						{
 							array_push($rows, $child);
 						}
@@ -1652,7 +1652,7 @@ abstract class CommonObject
 	}
 
     /**
-     *	Fetch array of objects linked to current object. Links are loaded into this->linkedObjects array.
+     *	Fetch array of objects linked to current object. Links are loaded into this->linkedObjects array and this->linkedObjectsIds
      *
      *	@param	int		$sourceid		Object source id
      *	@param  string	$sourcetype		Object source type
@@ -2221,7 +2221,14 @@ abstract class CommonObject
 			foreach($extrafields->attribute_label as $key=>$label)
 			{
 				$colspan='3';
-				$value=(isset($_POST["options_".$key])?$_POST["options_".$key]:$this->array_options["options_".$key]);
+				switch($mode) {
+					case "view":
+						$value=$this->array_options["options_".$key];
+						break;
+					case "edit":
+						$value=(isset($_POST["options_".$key])?$_POST["options_".$key]:$this->array_options["options_".$key]);
+						break;
+				}
 				if ($extrafields->attribute_type[$key] == 'separate')
 				{
 					$out .= $extrafields->showSeparator($key);
@@ -2506,12 +2513,6 @@ abstract class CommonObject
         if ($objecttype == 'delivery') {
             $classpath = 'livraison/class'; $subelement = 'livraison'; $module = 'livraison_bon';
         }
-        if ($objecttype == 'invoice_supplier') {
-            $classpath = 'fourn/class';
-        }
-        if ($objecttype == 'order_supplier')   {
-            $classpath = 'fourn/class';
-        }
         if ($objecttype == 'contract') {
             $classpath = 'contrat/class'; $module='contrat'; $subelement='contrat';
         }
@@ -2529,10 +2530,16 @@ abstract class CommonObject
 
         $classfile = strtolower($subelement); $classname = ucfirst($subelement);
         if ($objecttype == 'invoice_supplier') {
-            $classfile = 'fournisseur.facture'; $classname='FactureFournisseur';
+            $classfile = 'fournisseur.facture';
+            $classname='FactureFournisseur';
+            $classpath = 'fourn/class';
+            $module='fournisseur';
         }
         if ($objecttype == 'order_supplier')   {
-            $classfile = 'fournisseur.commande'; $classname='CommandeFournisseur';
+            $classfile = 'fournisseur.commande';
+            $classname='CommandeFournisseur';
+            $classpath = 'fourn/class';
+            $module='fournisseur';
         }
 
         if (! empty($conf->$module->enabled))
@@ -3097,7 +3104,7 @@ abstract class CommonObject
 			if (empty($line->pa_ht) && isset($line->fk_fournprice) && !$force_price) {
 				$product = new ProductFournisseur($this->db);
 				if ($product->fetch_product_fournisseur_price($line->fk_fournprice))
-					$line->pa_ht = $product->fourn_unitprice;
+					$line->pa_ht = $product->fourn_unitprice * (1 - $product->fourn_remise_percent / 100);
 				if (isset($conf->global->MARGIN_TYPE) && $conf->global->MARGIN_TYPE == "2" && $product->fourn_unitcharges > 0)
 					$line->pa_ht += $product->fourn_unitcharges;
 			}
@@ -3108,53 +3115,80 @@ abstract class CommonObject
 
 			// calcul des marges
 			if (isset($line->fk_remise_except) && isset($conf->global->MARGIN_METHODE_FOR_DISCOUNT)) {    // remise
+			    $pa = $line->qty * $line->pa_ht;
+			    $pv = $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
 				if ($conf->global->MARGIN_METHODE_FOR_DISCOUNT == '1') { // remise globale considérée comme produit
-					$marginInfos['pa_products'] += $line->pa_ht;// ($line->pa_ht != 0)?$line->pa_ht:$line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pv_products'] += $line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pa_total'] +=  $line->pa_ht;// ($line->pa_ht != 0)?$line->pa_ht:$line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pv_total'] +=  $line->subprice * (1 - $line->remise_percent / 100);
+					$marginInfos['pa_products'] += $pa;
+					$marginInfos['pv_products'] += $pv;
+					$marginInfos['pa_total'] +=  $pa;
+					$marginInfos['pv_total'] +=  $pv;
+					// if credit note, margin = -1 * (abs(selling_price) - buying_price)
+					if ($pv < 0)
+						$marginInfos['margin_on_products'] += -1 * (abs($pv) - $pa);
+					else
+						$marginInfos['margin_on_products'] += $pv - $pa;
 				}
 				elseif ($conf->global->MARGIN_METHODE_FOR_DISCOUNT == '2') { // remise globale considérée comme service
-					$marginInfos['pa_services'] += $line->pa_ht;// ($line->pa_ht != 0)?$line->pa_ht:$line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pv_services'] += $line->subprice * (1 - ($line->remise_percent / 100));
-					$marginInfos['pa_total'] +=  $line->pa_ht;// ($line->pa_ht != 0)?$line->pa_ht:$line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pv_total'] +=  $line->subprice * (1 - $line->remise_percent / 100);
+					$marginInfos['pa_services'] += $pa;
+					$marginInfos['pv_services'] += $pv;
+					$marginInfos['pa_total'] +=  $pa;
+					$marginInfos['pv_total'] +=  $pv;
+					// if credit note, margin = -1 * (abs(selling_price) - buying_price)
+					if ($pv < 0)
+						$marginInfos['margin_on_services'] += -1 * (abs($pv) - $pa);
+					else
+						$marginInfos['margin_on_services'] += $pv - $pa;
 				}
 				elseif ($conf->global->MARGIN_METHODE_FOR_DISCOUNT == '3') { // remise globale prise en compte uniqt sur total
-					$marginInfos['pa_total'] += $line->pa_ht;// ($line->pa_ht != 0)?$line->pa_ht:$line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pv_total'] += $line->subprice * (1 - ($line->remise_percent / 100));
+					$marginInfos['pa_total'] += $pa;
+					$marginInfos['pv_total'] += $pv;
 				}
 			}
 			else {
 				$type=$line->product_type?$line->product_type:$line->fk_product_type;
 				if ($type == 0) {  // product
-					$marginInfos['pa_products'] += $line->qty * $line->pa_ht;
-					$marginInfos['pv_products'] += $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
-					$marginInfos['pa_total'] +=  $line->qty * $line->pa_ht;
-					$marginInfos['pv_total'] +=  $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
+				    $pa = $line->qty * $line->pa_ht;
+				    $pv = $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
+					$marginInfos['pa_products'] += $pa;
+					$marginInfos['pv_products'] += $pv;
+					$marginInfos['pa_total'] +=  $pa;
+					$marginInfos['pv_total'] +=  $pv;
+					// if credit note, margin = -1 * (abs(selling_price) - buying_price)
+					if ($pv < 0)
+						$marginInfos['margin_on_products'] += -1 * (abs($pv) - $pa);
+					else
+						$marginInfos['margin_on_products'] += $pv - $pa;
 				}
 				elseif ($type == 1) {  // service
-					$marginInfos['pa_services'] += $line->qty * $line->pa_ht;
-					$marginInfos['pv_services'] += $line->qty * $line->subprice * (1 - ($line->remise_percent / 100));
-					$marginInfos['pa_total'] +=  $line->qty * $line->pa_ht;
-					$marginInfos['pv_total'] +=  $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
+				    $pa = $line->qty * $line->pa_ht;
+				    $pv = $line->qty * $line->subprice * (1 - $line->remise_percent / 100);
+					$marginInfos['pa_services'] += $pa;
+					$marginInfos['pv_services'] += $pv;
+					$marginInfos['pa_total'] +=  $pa;
+					$marginInfos['pv_total'] +=  $pv;
+					// if credit note, margin = -1 * (abs(selling_price) - buying_price)
+					if ($pv < 0)
+						$marginInfos['margin_on_services'] += -1 * (abs($pv) - $pa);
+					else
+						$marginInfos['margin_on_services'] += $pv - $pa;
 				}
 			}
 		}
-
-		$marginInfos['margin_on_products'] = $marginInfos['pv_products'] - $marginInfos['pa_products'];
 		if ($marginInfos['pa_products'] > 0)
 			$marginInfos['margin_rate_products'] = 100 * round($marginInfos['margin_on_products'] / $marginInfos['pa_products'],5);
 		if ($marginInfos['pv_products'] > 0)
 			$marginInfos['mark_rate_products'] = 100 * round($marginInfos['margin_on_products'] / $marginInfos['pv_products'],5);
 
-		$marginInfos['margin_on_services'] = $marginInfos['pv_services'] - $marginInfos['pa_services'];
 		if ($marginInfos['pa_services'] > 0)
 			$marginInfos['margin_rate_services'] = 100 * round($marginInfos['margin_on_services'] / $marginInfos['pa_services'],5);
 		if ($marginInfos['pv_services'] > 0)
 			$marginInfos['mark_rate_services'] = 100 * round($marginInfos['margin_on_services'] / $marginInfos['pv_services'],5);
 
-		$marginInfos['total_margin'] = $marginInfos['pv_total'] - $marginInfos['pa_total'];
+		// if credit note, margin = -1 * (abs(selling_price) - buying_price)
+		if ($marginInfos['pv_total'] < 0)
+			$marginInfos['total_margin'] = -1 * (abs($marginInfos['pv_total']) - $marginInfos['pa_total']);
+		else
+			$marginInfos['total_margin'] = $marginInfos['pv_total'] - $marginInfos['pa_total'];
 		if ($marginInfos['pa_total'] > 0)
 			$marginInfos['total_margin_rate'] = 100 * round($marginInfos['total_margin'] / $marginInfos['pa_total'],5);
 		if ($marginInfos['pv_total'] > 0)
@@ -3225,5 +3259,17 @@ abstract class CommonObject
 		print '</tr>';
 		print '</table>';
 	}
+
+	function __clone()
+    {
+        // Force a copy of this->lines, otherwise it will point to same object.
+        if (isset($this->lines) && is_array($this->lines))
+        {
+        	for($i=0; $i < count($this->lines); $i++)
+        	{
+            	$this->lines[$i] = dol_clone($this->lines[$i]);
+        	}
+        }
+    }
 }
 ?>

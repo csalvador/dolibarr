@@ -2,6 +2,36 @@
 English Dolibarr ChangeLog
 --------------------------------------------------------------
 
+***** ChangeLog for 3.4.1 compared to 3.4.0 *****
+Fix: Display buying price on line edit when no supplier price is defined
+Fix: Retrieving of margin info when invoice created automatically from order
+Fix: Reordering supplier products in list by supplier or supplier ref was crashing
+Fix: [ bug #1029 ] Tulip numbering mask
+Fix: Supplier invoice and supplier order are not displayed into object link into agenda event card
+Fix: [ bug #1033 ] SUPPLIER REF disappeared
+Fix: update extrafield do not display immediatly after update
+Fix: Fix bug with canvas thirdparty
+Fix: [ bug #1037 ] Consumption> Supplier invoices related
+Fix: User group name do not display in card (view or edit mode)
+Fix: Link "Show all supplier invoice" on suplier card not working 
+Fix: [ bug #1039 ] Pre-defined invoices conversion
+Fix: If only service module is activated, it's impossible to delete service
+Fix: [ bug #1043 ] Bad interventions ref numbering
+Fix: Mailing module : if an email is already in destinaires list all other email from selector was not inserted
+Fix: Localtaxes balance not showing
+Fix: Intervention box links to contracts id
+Fix: Compatiblity with multicompany module
+Fix: Edit propal line was losing product supplier price id
+Fix: Delete linked element to supplier invoice when deleted 
+Fix: [ bug #1061 ] Bad info shipped products
+Fix: [ bug #1062 ] Documents lost in propals and contracts validating
+Fix: Supplier price displayed on document lines and margin infos didnt take discount
+Fix: sorting on qty did not work in supplier product list
+Fix: there was no escaping on filter fields in supplier product list
+Fix: bugs on margin reports and better margin calculation on credit notes
+Qual: Add travis-ci integration
+
+
 ***** ChangeLog for 3.4 compared to 3.3.* *****
 For users:
 - New: Can use ODS templates as document templates.
@@ -58,6 +88,7 @@ For users:
 - Fix: [Bug #958] LocalTax2 for Spain fails on Suppliers
 - Fix: [ bug #972 ] Auto completion contact field do not take account the min caract number before search
 - Fix: [ bug #971 ] html.form.class.php select_contact with autocomplete do not exclude id from exclude array
+- Fix: Expedition creation, can retreive product from other expedition
 
 For translators:
 - Update language files.
@@ -99,6 +130,8 @@ backport commit 384e3812eb73a15adafb472cacfb93397a54459b to fix W3C/edit contrac
 
 ***** ChangeLog for 3.3.4 compared to 3.3.3 *****
 - Fix: [ bug #1001 ] Social Contribution : State not correct
+- Fix: Better management of pdf generation when tcpdf is not available.
+- Fix: Change to be more debian compliant natively.
 
 ***** ChangeLog for 3.3.3 compared to 3.3.2 *****
 - Fix: [ bug #903 ] Fatal error: Call to undefined function dol_get_first_day() in htdocs/commande/liste.php

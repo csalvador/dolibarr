@@ -1,5 +1,6 @@
 <?php
-/* Copyright (C) 2011 François Cerbelle <francois@cerbelle.net>
+/* Copyright (C) 2011 François Cerbelle   <francois@cerbelle.net>
+ * Copyright (C) 2013 Laurent Destailleur <eldy@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +27,7 @@ include_once DOL_DOCUMENT_ROOT.'/core/modules/mailings/modules_mailings.php';
 
 
 /**
- *     \class      mailing_contacts3
- *     \brief      Class to manage a list of personalised recipients for mailing feature
+ *	Class to manage a list of personalised recipients for mailing feature
  */
 class mailing_contacts3 extends MailingTargets
 {
@@ -80,17 +80,19 @@ class mailing_contacts3 extends MailingTargets
         $sql.= " sp.lastname, sp.firstname, sp.civilite,";
         $sql.= " s.nom as companyname";
         $sql.= " FROM ".MAIN_DB_PREFIX."socpeople as sp";
-    	if ($filtersarray[0] <> 'all') $sql.= ", ".MAIN_DB_PREFIX."categorie as c";
-    	if ($filtersarray[0] <> 'all') $sql.= ", ".MAIN_DB_PREFIX."categorie_societe as cs";
     	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON s.rowid = sp.fk_soc";
-    	$sql.= " WHERE sp.email != ''";     // Note that null != '' is false
+        if ($filtersarray[0] <> 'all') $sql.= ", ".MAIN_DB_PREFIX."categorie as c";
+    	if ($filtersarray[0] <> 'all') $sql.= ", ".MAIN_DB_PREFIX."categorie_societe as cs";
+    	$sql.= " WHERE sp.email <> ''";     // Note that null != '' is false
     	$sql.= " AND sp.no_email = 0";
     	$sql.= " AND sp.entity IN (".getEntity('societe', 1).")";
+    	$sql.= " AND sp.email NOT IN (SELECT email FROM ".MAIN_DB_PREFIX."mailing_cibles WHERE fk_mailing=".$mailing_id.")";
     	if ($filtersarray[0] <> 'all') $sql.= " AND cs.fk_categorie = c.rowid";
     	if ($filtersarray[0] <> 'all') $sql.= " AND cs.fk_societe = sp.fk_soc";
     	if ($filtersarray[0] <> 'all') $sql.= " AND c.label = '".$this->db->escape($filtersarray[0])."'";
     	$sql.= " ORDER BY sp.lastname, sp.firstname";
 
+    	dol_syslog("sql=".$sql);
     	$resql = $this->db->query($sql);
     	if ($resql)
     	{

@@ -543,7 +543,10 @@ class FormFile
                         $out.= ($param?'&'.$param:'');
                         $out.= '">'.img_printer().'</a></td>';
                     }
-                    if (is_object($hookmanager)) $out.= $hookmanager->executeHooks('formBuilddocLineOptions',$parameters,$file);
+                    if (is_object($hookmanager)) {
+                        $parameters=array('socid'=>(isset($GLOBALS['socid'])?$GLOBALS['socid']:''),'id'=>(isset($GLOBALS['id'])?$GLOBALS['id']:''),'modulepart'=>$modulepart,'relativepath'=>$relativepath);
+                        $out .= $hookmanager->executeHooks('formBuilddocLineOptions',$parameters,$file);
+                    }
 				}
 
                 $out.= '</tr>';

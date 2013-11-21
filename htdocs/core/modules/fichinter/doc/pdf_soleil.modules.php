@@ -245,14 +245,14 @@ class pdf_soleil extends ModelePDFFicheinter
 						$pdf->SetTextColor(0,0,0);
 
 						$pdf->setTopMargin($tab_top_newpage);
-						$pdf->setPageOrientation('', 1, 2 * $this->marge_basse);	// The only function to edit the bottom margin of current page to set it.
+						$pdf->setPageOrientation('', 1, $heightforfreetext + $heightforfooter);	// The only function to edit the bottom margin of current page to set it.
 						$pageposbefore=$pdf->getPage();
 
 						// Description of product line
 						$txt='<strong>'.dol_htmlentitiesbr($outputlangs->transnoentities("Date")." : ".dol_print_date($objectligne->datei,'dayhour',false,$outputlangs,true)." - ".$outputlangs->transnoentities("Duration")." : ".convertSecondToTime($objectligne->duration),1,$outputlangs->charset_output).'</strong>';
 						$desc=dol_htmlentitiesbr($objectligne->desc,1);
 
-						$pdf->writeHTMLCell(0, 0, $curX, $curY, dol_concatdesc($txt,$desc), 0, 1, 0);
+						$pdf->writeHTMLCell(0, 0, $curX, $curY + 1, dol_concatdesc($txt,$desc), 0, 1, 0);
 
 						$nexY = $pdf->GetY();
 						$pageposafter=$pdf->getPage();
@@ -356,13 +356,10 @@ class pdf_soleil extends ModelePDFFicheinter
 	 *   @param		int			$nblines		Number of lines
 	 *   @return	void
 	 */
-	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0, $i, $nblines)
+	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0)
 	{
 		global $conf;
 
-		// Force to disable hidetop and hidebottom
-		$hidebottom=0;
-		if ($hidetop) $hidetop=-1;
 
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 /*
@@ -392,10 +389,10 @@ class pdf_soleil extends ModelePDFFicheinter
 */
 
 		// Output Rect
-		$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $tab_height+3, $hidetop, $hidebottom);	// Rect prend une longueur en 3eme param et 4eme param
+		$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $tab_height-3, 0, 0);	// Rect prend une longueur en 3eme param et 4eme param
 
 		//test $i and $nblines to know if you're on the last page
-		if (empty($hidebottom) && $i == $nblines)
+		if (empty($hidebottom))
 		{
 			$pdf->SetXY(20,230);
 			$pdf->MultiCell(66,5, $outputlangs->transnoentities("NameAndSignatureOfInternalContact"),0,'L',0);

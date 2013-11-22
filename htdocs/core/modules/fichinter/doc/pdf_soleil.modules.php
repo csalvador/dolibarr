@@ -175,12 +175,11 @@ class pdf_soleil extends ModelePDFFicheinter
 				$pagenb++;
 				$this->_pagehead($pdf, $object, 1, $outputlangs);
 				$pdf->SetFont('','', $default_font_size - 1);
-				$pdf->MultiCell(0, 3, '');		// Set interline to 3
 				$pdf->SetTextColor(0,0,0);
 
 				$tab_top = 90;
 				$tab_top_newpage = (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)?42:10);
-				$tab_height = 130;
+				$tab_height = $this->page_hauteur - $tab_top - $this->marge_basse;
 				$tab_height_newpage = 150;
 
 				// Affiche notes
@@ -215,7 +214,6 @@ class pdf_soleil extends ModelePDFFicheinter
 
 				$pdf->SetFont('', '', $default_font_size - 1);
 
-				$pdf->MultiCell(0, 3, '');		// Set interline to 3
 				$pdf->SetXY($this->marge_gauche, $tab_top + 8);
 				$text=$object->description;
 				if ($object->duree > 0)
@@ -231,7 +229,6 @@ class pdf_soleil extends ModelePDFFicheinter
 
 				$pdf->line($this->marge_gauche, $nexY, $this->page_largeur-$this->marge_droite, $nexY);
 
-				$pdf->MultiCell(0, 2, '');		// Set interline to 3. Then writeMultiCell must use 3 also.
 
 				$nblines = count($object->lines);
 
@@ -248,14 +245,14 @@ class pdf_soleil extends ModelePDFFicheinter
 						$pdf->SetTextColor(0,0,0);
 
 						$pdf->setTopMargin($tab_top_newpage);
-						$pdf->setPageOrientation('', 1, $heightforfooter+$heightforfreetext+$heightforinfotot);	// The only function to edit the bottom margin of current page to set it.
+						$pdf->setPageOrientation('', 1, $heightforfreetext + $heightforfooter);	// The only function to edit the bottom margin of current page to set it.
 						$pageposbefore=$pdf->getPage();
 
 						// Description of product line
 						$txt='<strong>'.dol_htmlentitiesbr($outputlangs->transnoentities("Date")." : ".dol_print_date($objectligne->datei,'dayhour',false,$outputlangs,true)." - ".$outputlangs->transnoentities("Duration")." : ".convertSecondToTime($objectligne->duration),1,$outputlangs->charset_output).'</strong>';
 						$desc=dol_htmlentitiesbr($objectligne->desc,1);
 
-						$pdf->writeHTMLCell(0, 0, $curX, $curY, dol_concatdesc($txt,$desc), 0, 1, 0);
+						$pdf->writeHTMLCell(0, 0, $curX, $curY + 1, dol_concatdesc($txt,$desc), 0, 1, 0);
 
 						$nexY = $pdf->GetY();
 						$pageposafter=$pdf->getPage();
@@ -276,26 +273,27 @@ class pdf_soleil extends ModelePDFFicheinter
 							$pdf->setPage($pagenb);
 							if ($pagenb == 1)
 							{
-								$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1);
+								$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1, $i, $nblines);
 							}
 							else
 							{
-								$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1);
+								$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1, $i, $nblines);
 							}
 							$this->_pagefoot($pdf,$object,$outputlangs,1);
 							$pagenb++;
 							$pdf->setPage($pagenb);
 							$pdf->setPageOrientation('', 1, 0);	// The only function to edit the bottom margin of current page to set it.
+							$this->_pagehead($pdf, $object, 0, $outputlangs);
 						}
 						if (isset($object->lines[$i+1]->pagebreak) && $object->lines[$i+1]->pagebreak)
 						{
 							if ($pagenb == 1)
 							{
-								$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1);
+								$this->_tableau($pdf, $tab_top, $this->page_hauteur - $tab_top - $heightforfooter, 0, $outputlangs, 0, 1, $i, $nblines);
 							}
 							else
 							{
-								$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1);
+								$this->_tableau($pdf, $tab_top_newpage, $this->page_hauteur - $tab_top_newpage - $heightforfooter, 0, $outputlangs, 1, 1, $i, $nblines);
 							}
 							$this->_pagefoot($pdf,$object,$outputlangs,1);
 							// New page
@@ -360,9 +358,6 @@ class pdf_soleil extends ModelePDFFicheinter
 	{
 		global $conf;
 
-		// Force to disable hidetop and hidebottom
-		$hidebottom=0;
-		if ($hidetop) $hidetop=-1;
 
 		$default_font_size = pdf_getPDFFontSize($outputlangs);
 /*
@@ -392,7 +387,7 @@ class pdf_soleil extends ModelePDFFicheinter
 */
 
 		// Output Rect
-		$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $tab_height+3, $hidetop, $hidebottom);	// Rect prend une longueur en 3eme param et 4eme param
+		$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $tab_height-3, 0, 0);	// Rect prend une longueur en 3eme param et 4eme param
 
 		if (empty($hidebottom))
 		{

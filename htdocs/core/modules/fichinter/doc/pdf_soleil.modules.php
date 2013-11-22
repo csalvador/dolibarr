@@ -179,7 +179,7 @@ class pdf_soleil extends ModelePDFFicheinter
 
 				$tab_top = 90;
 				$tab_top_newpage = (empty($conf->global->MAIN_PDF_DONOTREPEAT_HEAD)?42:10);
-				$tab_height = $this->page_hauteur - $tab_top - $this->marge_basse; //130;
+				$tab_height = $this->page_hauteur - $tab_top - $this->marge_basse;
 				$tab_height_newpage = 150;
 
 				// Affiche notes
@@ -352,8 +352,6 @@ class pdf_soleil extends ModelePDFFicheinter
 	 *   @param		Translate	$outputlangs	Langs object
 	 *   @param		int			$hidetop		Hide top bar of array
 	 *   @param		int			$hidebottom		Hide bottom bar of array
-	 *   @param		int			$i				Line number
-	 *   @param		int			$nblines		Number of lines
 	 *   @return	void
 	 */
 	function _tableau(&$pdf, $tab_top, $tab_height, $nexY, $outputlangs, $hidetop=0, $hidebottom=0)
@@ -391,7 +389,6 @@ class pdf_soleil extends ModelePDFFicheinter
 		// Output Rect
 		$this->printRect($pdf, $this->marge_gauche, $tab_top, $this->page_largeur-$this->marge_gauche-$this->marge_droite, $tab_height-3, 0, 0);	// Rect prend une longueur en 3eme param et 4eme param
 
-		//test $i and $nblines to know if you're on the last page
 		if (empty($hidebottom))
 		{
 			$pdf->SetXY(20,230);

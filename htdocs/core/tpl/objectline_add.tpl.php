@@ -35,7 +35,7 @@
 	<td align="right" width="50"><?php echo $langs->trans('Qty'); ?></td>
 	<td align="right" width="50"><?php echo $langs->trans('ReductionShort'); ?></td>
 <?php
-$colspan = 4;
+$colspan = 5;
 $colspan2 = 12;
 if (! empty($conf->margin->enabled)) {
 ?>
@@ -220,7 +220,6 @@ $(document).ready(function() {
 
 	$('#idprod').change(function() {
 		if ($(this).val() > 0) {
-
 			// Update vat rate combobox
 			getVATRates('getSellerVATRates', 'tva_tx', $(this).val());
 

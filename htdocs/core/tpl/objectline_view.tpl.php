@@ -132,6 +132,7 @@
 	<td align="right" class="nowrap"><?php echo $langs->trans('Option'); ?></td>
 	<?php } else { ?>
 	<td align="right" class="nowrap"><?php echo price($line->total_ht); ?></td>
+	<td align="right" class="nowrap"><?php echo price($line->total_ttc); ?></td>
 	<?php } ?>
 
 	<?php if ($this->statut == 0  && $user->rights->$element->creer) { ?>

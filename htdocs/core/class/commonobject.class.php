@@ -2762,6 +2762,9 @@ abstract class CommonObject
 		// Total HT
 		print '<td align="right" width="50">'.$langs->trans('TotalHTShort').'</td>';
 
+		// Total with VAT
+		print '<td align="right" width="50">'.$langs->trans('TotalTTCShort').'</td>';
+
 		print '<td width="10"></td>';
 
 		print '<td width="10"></td>';

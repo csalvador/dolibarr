@@ -389,3 +389,5 @@ DELETE FROM llx_document_model WHERE nom ='elevement' AND type='delivery';
 DELETE FROM llx_document_model WHERE nom ='' AND type='delivery';
 
 ALTER TABLE llx_product ADD COLUMN desiredstock integer;
+
+ALTER TABLE llx_bookmark ADD COLUMN entity integer DEFAULT 1 NOT NULL

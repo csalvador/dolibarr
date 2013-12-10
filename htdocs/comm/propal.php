@@ -2064,7 +2064,8 @@ else
 			}
 
 			// Send
-			if ($object->statut == 1 || $object->statut == 2)
+			if (empty($conf->global->MAIN_DISABLE_ALL_MAILS)
+                && ($object->statut == 1 || $object->statut == 2))
 			{
 				if (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || $user->rights->propal->propal_advance->send)
 				{

@@ -2335,7 +2335,8 @@ else
 				}
 
 				// Send
-				if ($object->statut > 0)
+				if (empty($conf->global->MAIN_DISABLE_ALL_MAILS)
+                    && $object->statut > 0)
 				{
 					if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) || $user->rights->commande->order_advance->send))
 					{

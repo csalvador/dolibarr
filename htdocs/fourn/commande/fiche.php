@@ -1718,7 +1718,8 @@ elseif (! empty($object->id))
 			}
 
 			// Send
-			if (in_array($object->statut, array(2, 3, 4, 5)))
+			if (empty($conf->global->MAIN_DISABLE_ALL_MAILS)
+                && in_array($object->statut, array(2, 3, 4, 5)))
 			{
 				if ($user->rights->fournisseur->commande->commander)
 				{

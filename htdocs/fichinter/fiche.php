@@ -1399,7 +1399,8 @@ else if ($id > 0 || ! empty($ref))
 			}
 
 			// Send
-			if ($object->statut > 0)
+			if (empty($conf->global->MAIN_DISABLE_ALL_MAILS)
+                && $object->statut > 0)
 			{
 				if (empty($conf->global->MAIN_USE_ADVANCED_PERMS) || $user->rights->ficheinter->ficheinter_advance->send)
 				{

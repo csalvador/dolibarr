@@ -390,4 +390,6 @@ DELETE FROM llx_document_model WHERE nom ='' AND type='delivery';
 
 ALTER TABLE llx_product ADD COLUMN desiredstock integer;
 
-ALTER TABLE llx_bookmark ADD COLUMN entity integer DEFAULT 1 NOT NULL
+ALTER TABLE llx_bookmark ADD COLUMN entity integer DEFAULT 1 NOT NULL;
+ALTER TABLE llx_bookmark DROP INDEX uk_bookmark_url;
+ALTER TABLE llx_bookmark DROP INDEX uk_bookmark_title;

@@ -52,7 +52,7 @@ $message='';
 // Security check
 $result = restrictedArea($user, 'user', $id, 'usergroup&usergroup', 'user');
 
-if (! empty($conf->multicompany->enabled) && $conf->entity > 1 && $conf->multicompany->transverse_mode)
+if (! empty($conf->multicompany->enabled) && $conf->entity > 1 && ! $conf->multicompany->transverse_mode)
 {
     accessforbidden();
 }

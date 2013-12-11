@@ -226,4 +226,9 @@ if (! defined('MAIN_LABEL_MENTION_NPR') ) define('MAIN_LABEL_MENTION_NPR','NPR')
 // We force FPDF
 if (! empty($dolibarr_pdf_force_fpdf)) $conf->global->MAIN_USE_FPDF=$dolibarr_pdf_force_fpdf;
 
+// Use multicompany parameter now that it exists
+if (! empty($conf->global->MULTICOMPANY_TRANSVERSE_MODE)) {
+    $conf->multicompany->transverse_mode = $conf->global->MULTICOMPANY_TRANSVERSE_MODE;
+}
+
 ?>

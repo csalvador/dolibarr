@@ -42,7 +42,11 @@ function check_user_password_dolibarr($usertotest,$passwordtotest,$entitytotest=
 
 	// Force master entity in transversal mode
 	$entity=$entitytotest;
-	if (! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode)) $entity=1;
+	/* FIXME: We only want transversal mode for groups
+     * This will fall apart when users will have multiple entities to deal with
+	 * We need to see if entity is declared for user in llx_usergroup_user
+     * if (! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode)) $entity=1;
+	 */
 
 	$login='';
 

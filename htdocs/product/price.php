@@ -412,6 +412,7 @@ else
 	}
 
 	// Price (of the same product), from other entities
+    // FIXME: please only return last price from other entities when historical data is present
 	$sql = "SELECT pp.price, e.label";
 	$sql.= " FROM " . MAIN_DB_PREFIX . "product_price as pp";
 	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON pp.fk_product = p.rowid";

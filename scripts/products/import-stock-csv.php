@@ -150,9 +150,18 @@ if (($handle = fopen($fname, 'r')) !== false) {
 
         // Get purchase price to set PMP
         $supplier_prices = $supplier_product->list_product_fournisseur_price($product->id);
+        $last_price_index = count($supplier_prices) - 1;
 
         // Add stock mouvement
-        $result = $stock->_create($user, $product->id, $warehouse_id, $product_qty, 3, $supplier_prices[0]->fourn_price, "Inventaire décembre 2013");
+        $result = $stock->_create(
+            $user,
+            $product->id,
+            $warehouse_id,
+            $product_qty,
+            3,
+            $supplier_prices[$last_price_index]->fourn_price,
+            "Inventaire décembre 2013"
+        );
 
         if ($result > 0) {
             $count++;

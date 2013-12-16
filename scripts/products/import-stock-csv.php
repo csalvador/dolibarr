@@ -97,8 +97,6 @@ $fname = $argv[1];
 // Start of transaction
 $db->begin();
 
-var_dump($db);
-
 if (($handle = fopen($fname, 'r')) !== false) {
     $line = 0; // Line counter
     $count = 0; // Element counter

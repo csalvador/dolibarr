@@ -4,8 +4,9 @@
  * Copyright (C) 2004-2013 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2005      Eric Seigne          <eric.seigne@ryxeo.com>
  * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
- * Copyright (C) 2008	   Patrick Raguin       <patrick.raguin@auguria.net>
+ * Copyright (C) 2008      Patrick Raguin       <patrick.raguin@auguria.net>
  * Copyright (C) 2010-2013 Juanjo Menent        <jmenent@2byte.es>
+ * Copyright (C) 2011-2013 Cédric Salvador      <csalvador@gpcsolutions.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -251,27 +252,10 @@ if (empty($reshook))
                     if ($object->particulier)
                     {
                         dol_syslog("This thirdparty is a personal people",LOG_DEBUG);
-                        $contact=new Contact($db);
-
-     					$contact->civilite_id		= $object->civilite_id;
-                        $contact->name				= $object->name_bis;
-                        $contact->firstname			= $object->firstname;
-                        $contact->address			= $object->address;
-                        $contact->zip				= $object->zip;
-                        $contact->town				= $object->town;
-                        $contact->state_id      	= $object->state_id;
-                        $contact->country_id		= $object->country_id;
-                        $contact->socid				= $object->id;	// fk_soc
-                        $contact->status			= 1;
-                        $contact->email				= $object->email;
-						$contact->phone_pro			= $object->phone;
-						$contact->fax				= $object->fax;
-                        $contact->priv				= 0;
-
-                        $result=$contact->create($user);
+                        $result=$object->create_individual($user);
                         if (! $result >= 0)
                         {
-                            $error=$contact->error; $errors=$contact->errors;
+                            $error=$object->error; $errors=$object->errors;
                         }
                     }
 

@@ -86,7 +86,7 @@ report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportl
 
 if ($modecompta == 'CREANCES-DETTES')
 {
-	$sql  = "SELECT date_format(f.datef,'%Y-%m') as dm, sum(f.total) as amount, sum(f.total_ttc) as amount_ttc";
+	$sql  = "SELECT date_format(f.datef,'%Y-%m') as dm, sum(f.total) as amount";
 	$sql.= " FROM ".MAIN_DB_PREFIX."facture as f";
 	$sql.= " WHERE f.fk_statut in (1,2)";
 	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type IN (0,1,2)";
@@ -98,7 +98,7 @@ else
 	 * Liste des paiements (les anciens paiements ne sont pas vus par cette requete car, sur les
 	 * vieilles versions, ils n'etaient pas lies via paiement_facture. On les ajoute plus loin)
 	 */
-	$sql  = "SELECT date_format(p.datep,'%Y-%m') as dm, sum(pf.amount) as amount_ttc";
+	$sql  = "SELECT date_format(p.datep,'%Y-%m') as dm, sum(pf.amount) as amount";
 	$sql.= " FROM ".MAIN_DB_PREFIX."facture as f";
 	$sql.= ", ".MAIN_DB_PREFIX."paiement_facture as pf";
 	$sql.= ", ".MAIN_DB_PREFIX."paiement as p";
@@ -118,8 +118,8 @@ if ($result)
 	while ($i < $num)
 	{
 		$obj = $db->fetch_object($result);
-		$cum[$obj->dm] = $obj->amount_ttc;
-		if ($obj->amount_ttc)
+		$cum[$obj->dm] = $obj->amount;
+		if ($obj->amount)
 		{
 			$minyearmonth=($minyearmonth?min($minyearmonth,$obj->dm):$obj->dm);
 			$maxyearmonth=max($maxyearmonth,$obj->dm);
@@ -135,7 +135,7 @@ else {
 // On ajoute les paiements anciennes version, non lies par paiement_facture
 if ($modecompta != 'CREANCES-DETTES')
 {
-	$sql = "SELECT date_format(p.datep,'%Y-%m') as dm, sum(p.amount) as amount_ttc";
+	$sql = "SELECT date_format(p.datep,'%Y-%m') as dm, sum(p.amount) as amount";
 	$sql.= " FROM ".MAIN_DB_PREFIX."bank as b";
 	$sql.= ", ".MAIN_DB_PREFIX."bank_account as ba";
 	$sql.= ", ".MAIN_DB_PREFIX."paiement as p";
@@ -155,8 +155,8 @@ if ($modecompta != 'CREANCES-DETTES')
 		while ($i < $num)
 		{
 			$obj = $db->fetch_object($result);
-			$cum[$obj->dm] += $obj->amount_ttc;
-			if ($obj->amount_ttc)
+			$cum[$obj->dm] += $obj->amount;
+			if ($obj->amount)
 			{
 				$minyearmonth=($minyearmonth?min($minyearmonth,$obj->dm):$obj->dm);
 				$maxyearmonth=max($maxyearmonth,$obj->dm);

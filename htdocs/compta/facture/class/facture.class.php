@@ -1736,8 +1736,8 @@ class Facture extends CommonInvoice
 			$sql.= " SET facnumber='".$num."', fk_statut = 1, fk_user_valid = ".$user->id.", date_valid = '".$this->db->idate($now)."'";
 			if (! empty($conf->global->FAC_FORCE_DATE_VALIDATION))	// If option enabled, we force invoice date
 			{
-				$sql.= ', datef='.$this->db->idate($this->date);
-				$sql.= ', date_lim_reglement='.$this->db->idate($this->date_lim_reglement);
+				$sql.= ", datef='".$this->db->idate($this->date)."'";
+				$sql.= ", date_lim_reglement='".$this->db->idate($this->date_lim_reglement)."'";
 			}
 			$sql.= ' WHERE rowid = '.$this->id;
 
@@ -1793,7 +1793,7 @@ class Facture extends CommonInvoice
 				if (preg_match('/^[\(]?PROV/i', $this->ref))
 				{
 					// On renomme repertoire facture ($this->ref = ancienne ref, $num = nouvelle ref)
-					// afin de ne pas perdre les fichiers attaches
+					// in order not to lose the attachments
 					$facref = dol_sanitizeFileName($this->ref);
 					$snumfa = dol_sanitizeFileName($num);
 					$dirsource = $conf->facture->dir_output.'/'.$facref;
@@ -3364,7 +3364,7 @@ class FactureLigne
 		$sql = 'SELECT fd.rowid, fd.fk_facture, fd.fk_parent_line, fd.fk_product, fd.product_type, fd.label as custom_label, fd.description, fd.price, fd.qty, fd.tva_tx,';
 		$sql.= ' fd.localtax1_tx, fd. localtax2_tx, fd.remise, fd.remise_percent, fd.fk_remise_except, fd.subprice,';
 		$sql.= ' fd.date_start as date_start, fd.date_end as date_end, fd.fk_product_fournisseur_price as fk_fournprice, fd.buy_price_ht as pa_ht,';
-		$sql.= ' fd.info_bits, fd.total_ht, fd.total_tva, fd.total_ttc, fd.total_localtax1, fd.total_localtax2, fd.rang,';
+		$sql.= ' fd.info_bits, fd.special_code, fd.total_ht, fd.total_tva, fd.total_ttc, fd.total_localtax1, fd.total_localtax2, fd.rang,';
 		$sql.= ' fd.fk_code_ventilation,';
 		$sql.= ' p.ref as product_ref, p.label as product_libelle, p.description as product_desc';
 		$sql.= ' FROM '.MAIN_DB_PREFIX.'facturedet as fd';
@@ -3393,6 +3393,7 @@ class FactureLigne
 			$this->date_start			= $this->db->jdate($objp->date_start);
 			$this->date_end				= $this->db->jdate($objp->date_end);
 			$this->info_bits			= $objp->info_bits;
+			$this->special_code			= $objp->special_code;
 			$this->total_ht				= $objp->total_ht;
 			$this->total_tva			= $objp->total_tva;
 			$this->total_localtax1		= $objp->total_localtax1;

@@ -900,7 +900,7 @@ else if ($action == 'add' && $user->rights->facture->creer)
 								$numlines=count($lines);
 								for ($i=0; $i<$numlines; $i++)
 								{
-									$totalamount += $lines[$i]->subprice;
+									$totalamount += $lines[$i]->total_ht;
 								}
 
 								if ($totalamount!=0) 
@@ -3680,16 +3680,16 @@ else if ($id > 0 || ! empty($ref))
 				// By default if $action=='presend'
 				$titreform='SendBillByMail';
 				$topicmail='SendBillRef';
-				$action='send';
 				$modelmail='facture_send';
 
 				if ($action == 'prerelance')	// For backward compatibility
 				{
 					$titrefrom='SendReminderBillByMail';
 					$topicmail='SendReminderBillRef';
-					$action='relance';
 					$modelmail='facture_relance';
+					$action='relance';
 				}
+				else $action='send';
 
 				$ref = dol_sanitizeFileName($object->ref);
 				include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';

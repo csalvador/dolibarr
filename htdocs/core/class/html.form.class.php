@@ -1486,15 +1486,23 @@ class Form
         }
 
 	// Price (of the same product), from other entities
-	$sql = "SELECT pp.price, e.label, COALESCE(SUM(ps.reel)) AS stock";
+	$sql = "SELECT pp.price";
+	if($conf->global->MAIN_MODULE_MULTICOMPANY) {
+		$sql .= ", e.label";
+	}
+	$sql .= ", COALESCE(SUM(ps.reel)) AS stock";
 	$sql.= " FROM " . MAIN_DB_PREFIX . "product_price as pp";
 	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON pp.fk_product = p.rowid";
-	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "entity as e ON p.entity = e.rowid";
+	if ($conf->global->MAIN_MODULE_MULTICOMPANY) {
+		$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "entity as e ON p.entity = e.rowid";
+		$group_order = " GROUP BY e.label, pp.price ORDER BY e.rowid";
+	} else {
+		$group_order = " GROUP BY pp.price";
+	}
 	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "product_stock as ps ON ps.fk_product = p.rowid";
 	$sql.= " WHERE p.ref = '" . $objp->ref . "'";
 	$sql.= " AND p.entity <> " . $conf->entity;
-	$sql.= " GROUP BY e.label, pp.price";
-	$sql.= " ORDER BY e.rowid";
+	$sql.= $group_order;
 
 	$req = $this->db->query($sql);
 

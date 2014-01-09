@@ -2,11 +2,12 @@
 /* Copyright (C) 2001-2006 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2011 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
- * Copyright (C) 2012      Marcos García        <marcosgdf@gmail.com>
+ * Copyright (C) 2012-2013 Marcos García        <marcosgdf@gmail.com>
  * Copyright (C) 2013      Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2013      Raphaël Doursenaud   <rdoursenaud@gpcsolutions.fr>
  * Copyright (C) 2013      Jean Heimburger   	<jean@tiaris.info>
  * Copyright (C) 2013      Cédric Salvador      <csalvador@gpcsolutions.fr>
+ * Copyright (C) 2013		Adolfo segura 		<adolfo.segura@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,7 +190,19 @@ else
         }
 
     }
-    if ($sbarcode) $sql.= " AND p.barcode LIKE '%".$sbarcode."%'";
+    if ($sbarcode) {
+
+		//If the barcode looks like an EAN13 format and the last digit is included in it,
+		//then whe look for the 12-digit too
+		//As the twelve-digit string will also hit the 13-digit code, we only look for this one
+		if (strlen($sbarcode) == 13) {
+			$sbarcode_12digit = substr($sbarcode, 0, 12);
+			$sql .=  "AND p.barcode LIKE '%".$sbarcode_12digit."%'";
+		} else {
+			$sql.= " AND p.barcode LIKE '%".$sbarcode."%'";
+		}
+        
+    }
     if ($snom) {
         // For natural search
         $scrit = explode(' ', $snom);

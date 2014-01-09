@@ -413,10 +413,15 @@ else
 
 	// Price (of the same product), from other entities
     // FIXME: please only return last price from other entities when historical data is present
-	$sql = "SELECT pp.price, e.label";
+	$sql = "SELECT pp.price";
+	if ($conf->global->MAIN_MODULE_MULTICOMPANY) {
+		$sql .= ", e.label";
+	}
 	$sql.= " FROM " . MAIN_DB_PREFIX . "product_price as pp";
 	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON pp.fk_product = p.rowid";
-	$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "entity as e ON p.entity = e.rowid";
+	if ($conf->global->MAIN_MODULE_MULTICOMPANY) {
+		$sql.= " LEFT JOIN " . MAIN_DB_PREFIX . "entity as e ON p.entity = e.rowid";
+	}
 	$sql.= " WHERE p.ref = '" . $object->ref . "'";
 	$sql.= " AND p.entity <> " . $object->entity;
 

@@ -573,7 +573,7 @@ class UserGroup extends CommonObject
 		$now=dol_now();
 
 		$entity=$conf->entity;
-		if(! empty($conf->multicompany->enabled) && $conf->entity == 1)
+		if(! empty($conf->multicompany->enabled)) // && $conf->entity == 1)  makes no sense for HTH
 		{
 			$entity=$this->entity;
 		}
@@ -629,7 +629,7 @@ class UserGroup extends CommonObject
 		$error=0;
 
 		$entity=$conf->entity;
-		if(! empty($conf->multicompany->enabled) && $conf->entity == 1)
+		if(! empty($conf->multicompany->enabled)) // && $conf->entity == 1)  makes no sense for HTH
 		{
 			$entity=$this->entity;
 		}

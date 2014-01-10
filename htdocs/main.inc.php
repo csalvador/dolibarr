@@ -1408,7 +1408,6 @@ function top_menu($head, $title='', $target='', $disablejs=0, $disablehead=0, $a
 
 	    // Link info
 	    $logouttext='';
-	    $logouthtmltext=$appli.' '.DOL_VERSION.'<br>';
 	    $logouthtmltext.=$langs->trans("Logout").'<br>';
 	    //$logouthtmltext.="<br>";
 	    if ($_SESSION["dol_authmode"] != 'forceuser'
@@ -1595,18 +1594,6 @@ function left_menu($menu_array_before, $helppagename='', $moresearchform='', $me
 			print '</a>';
 			print '</div>';
 		}
-	    //Dolibarr version
-	    $doliurl='http://www.dolibarr.org';
-	    $appli='Dolibarr';
-	    if (! empty($conf->global->MAIN_APPLICATION_TITLE)) {
-	    	$appli=$conf->global->MAIN_APPLICATION_TITLE; $doliurl='';
-	    }
-	    $appli.=" ".DOL_VERSION;
-	    print '<div id="blockvmenuhelp" class="blockvmenuhelp">';
-	    if ($doliurl) print '<a class="help" target="_blank" href="'.$doliurl.'">';
-	    print $appli;
-	    if ($doliurl) print '</a>';
-	    print '</div>';
 
 	    // Link to Dolibarr wiki pages
 	    if ($helppagename && empty($conf->global->MAIN_HELP_DISABLELINK))

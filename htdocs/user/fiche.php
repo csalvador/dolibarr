@@ -201,10 +201,11 @@ if ($action == 'add' && $canadduser)
         	{
         		$object->entity = 0;
         	}
-        	else if ($conf->multicompany->transverse_mode)
+            // This test serves no purpose for HTH
+        	/*else if ($conf->multicompany->transverse_mode)
         	{
         		$object->entity = 1; // all users in master entity
-        	}
+        	}  */
         	else
         	{
         		$object->entity = (empty($_POST["entity"]) ? 0 : $_POST["entity"]);

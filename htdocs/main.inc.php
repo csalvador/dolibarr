@@ -472,7 +472,21 @@ if (! defined('NOLOGIN'))
             exit;
         }
 
-        $resultFetchUser=$user->fetch('',$login);
+        /*
+         * FIXME:
+         * Rewrite properly
+         */
+        /*
+         * Handle transversal mode nicely without breaking other authentication methods
+         * We inserted the unlikely ID: keyword in a login name context to indicate we return
+         * an ID rather than a login name.
+         * This makes the login robust in multicompany's transversal mode since we validated an ID, not a login name.
+         */
+        if (strpos($login,'ID:') !== false) {
+            $resultFetchUser=$user->fetch(str_replace('ID:', '', $login));
+        } else {
+            $resultFetchUser=$user->fetch('',$login);
+        }
         if ($resultFetchUser <= 0)
         {
             dol_syslog('User not found, connexion refused');
@@ -510,10 +524,22 @@ if (! defined('NOLOGIN'))
     else
     {
         // We are already into an authenticated session
+        $id=$_SESSION["dol_logged_user_id"];
         $login=$_SESSION["dol_login"];
         dol_syslog("This is an already logged session. _SESSION['dol_login']=".$login);
 
-        $resultFetchUser=$user->fetch('',$login);
+        /*
+         * FIXME:
+         * Deprecate old methed
+         * Handle login by ID rather than login name
+         * Login names are not uniques and leaded to misbehavior with multicompany's transversal mode
+         */
+        if ($id) {
+            $resultFetchUser=$user->fetch($id);
+        } else {
+            // Fallback to legacy method
+            $resultFetchUser=$user->fetch('',$login);
+        }
         if ($resultFetchUser <= 0)
         {
             // Account has been removed after login
@@ -572,6 +598,7 @@ if (! defined('NOLOGIN'))
     	$error=0;
 
     	// Store value into session (values always stored)
+        $_SESSION["dol_logged_user_id"]=$user->id;
         $_SESSION["dol_login"]=$user->login;
         $_SESSION["dol_authmode"]=isset($dol_authmode)?$dol_authmode:'';
         $_SESSION["dol_tz"]=isset($dol_tz)?$dol_tz:'';

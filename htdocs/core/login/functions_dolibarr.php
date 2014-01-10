@@ -60,7 +60,12 @@ function check_user_password_dolibarr($usertotest,$passwordtotest,$entitytotest=
 		$sql ='SELECT rowid, entity, pass, pass_crypted';
 		$sql.=' FROM '.$table;
 		$sql.=' WHERE '.$usernamecol." = '".$db->escape($usertotest)."'";
-		$sql.=' AND '.$entitycol." IN (0," . ($entity ? $entity : 1) . ")";
+		$sql.=' AND ('.$entitycol." IN (0," . ($entity ? $entity : 1) . ")";
+        if (! empty($conf->multicompany->enabled) && ! empty($conf->multicompany->transverse_mode)) {
+            // Check if the user is allowed on this entity in transversal mode
+            $sql.='OR rowid IN (SELECT fk_user FROM '. MAIN_DB_PREFIX .'usergroup_user WHERE entity IN (0,' . $entity .'))';
+        }
+        $sql.=')';
 
 		dol_syslog("functions_dolibarr::check_user_password_dolibarr sql=".$sql);
 		$resql=$db->query($sql);
